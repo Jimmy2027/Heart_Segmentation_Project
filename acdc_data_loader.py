@@ -3,27 +3,41 @@ import matplotlib.pyplot as plt
 from nilearn import plotting
 import nibabel as nib
 import os
+import numpy as np
 from nilearn import image
 from nilearn.input_data import NiftiMasker
 import metrics_acdc
+import collections
 
 
-"""
-Data shape: (216, 256, 10, 30)
-"""
-
-data_dir = 'ACDC_dataset/training'
-raw_image_path01 = '_frame01.nii.gz'
-raw_image_path12 = '_frame12.nii.gz'
-label_path01 = '_frame01_gt.nii.gz'
-label_path12 = '_frame12_gt.nii.gz'
 
 
-def load_images(data_dir):
+def remove_other_segmentations(labels):
+    """
+    removes all other segmentations apart from the myocardium one
+
+    :param label: list of strings with paths to labels
+    :return: array with all the myocar labels
+
+        https://nipy.org/nibabel/images_and_memory.html
+
+    """
+    myocar_data = []
+    for i in labels:
+        img = nib.load(i)
+        img_data = img.get_data()
+        img_data[img_data == 1 ] = 0
+        img_data[img_data == 3 ] = 0
+        myocar_data.append(img_data)
+    return myocar_data
+
+#TODO load image data as well as data paths
+
+def load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, label_path12):
     """
 
-    :param data_dir:
-    :return: array of unlabeled images and array with labels
+    :param data_dir, both paths to systole and diastole images with corresponding labels
+    :return: array of paths to unlabeled images and array with path to corresponding labels
     """
     im_data = []
     labels = []
@@ -44,24 +58,61 @@ def load_images(data_dir):
 
                     if data_dir + '/' + x == (os.path.join(data_dir, o) + label_path01) or data_dir + '/' + x == (
                             os.path.join(data_dir, o) + label_path12):
+
                         labels.append(data_dir + '/'+ o+ '/' + x)
 
     return im_data, labels
 
+def display(img_data, block = True):
+    """
+    Plots middle slice of 3D image
 
-images, labels = load_images(data_dir)
-print(images)
-print(labels)
+    :param img_data: data to be plotted
+    :param block: if programm should be blocked
 
-images.sort()
-labels.sort()
-print(images)
-print(labels)
+    """
+    def show_slices(slices):
+        """ Function to display row of image slices """
+        fig, axes = plt.subplots(1, len(slices))
+        for i, slice in enumerate(slices):
+            axes[i].imshow(slice.T, cmap="gray", origin="lower")
 
-for i in range(1,5):
-    plotting.plot_roi(labels[i], bg_img=images[i], cmap='Paired')
-    # plotting.plot_img(i)
-    plotting.show()
+    n_i, n_j, n_k = img_data.shape
+    center_i = (n_i - 1) // 2  # // for integer division
+    center_j = (n_j - 1) // 2
+    center_k = (n_k - 1) // 2
+    print('Image center: ', center_i, center_j, center_k)
+    center_vox_value = img_data[center_i, center_j, center_k]
+    print('Image center value: ', center_vox_value)
+
+    slice_0 = img_data[center_i, :, :]
+    slice_1 = img_data[:, center_j, :]
+    slice_2 = img_data[:, :, center_k]
+
+    show_slices([slice_0, slice_1, slice_2])
+
+    plt.suptitle("Center slices for image")
+    plt.show(block = block)
+
+
+
+
+
+
+
+
+
+def plot_img_with_label(labels, images):
+    """
+    Plots 50 images with labels
+    :param labels:
+    :param images:
+    """
+    for i in range(1, 50):
+        plotting.plot_roi(labels[i], bg_img=images[i], cmap='Paired')
+        # plotting.plot_img(i)
+        plotting.show()
+
 
 
 # data_path = 'ACDC_dataset/training/patient001/patient001_frame01.nii.gz'
@@ -71,13 +122,13 @@ for i in range(1,5):
 #
 # data = nib.load(data_path)
 # mask = nib.load(pred_path)
-#
+# print(data)
 # # masker = NiftiMasker(mask_img=mask, standardize=True)
 # plotting.plot_roi(mask, bg_img=data,
 #                   cmap='Paired')
 #
 # plotting.show()
-#
+
 
 
 
