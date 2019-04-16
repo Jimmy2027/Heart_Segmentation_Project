@@ -41,17 +41,23 @@ resolution = 2*cropper_size
 cropped_img_data = methods.crop_images(cropper_size, center_of_masses, img_data)
 cropped_myocar_labels = methods.crop_images(cropper_size, center_of_masses, myocar_labels)
 
+number_of_images = 0
+for s in cropped_img_data:
+    for i in range(0, s.shape[0] - 1):
+        number_of_images = number_of_images + 1
+
+
 number_of_slices_per_image = []
-unet_input = np.empty((979, resolution, resolution))
-unet_labels = np.empty((979, resolution, resolution))
+unet_input = np.empty((number_of_images, resolution, resolution))
+unet_labels = np.empty((number_of_images, resolution, resolution))
 counter = 0
 for s in cropped_img_data:
     number_of_slices_per_image.append(s.shape[0])
-    for i in range(0,s.shape[0]-1):
-        unet_input[counter,...] = s[i,...]
+    for i in range(0, s.shape[0]-1):
+        unet_input[counter, ...] = s[i, ...]
 
 for s in cropped_myocar_labels:
-    for i in range(0,s.shape[0]-1):
+    for i in range(0, s.shape[0]-1):
         unet_labels[counter, ...] = s[i, ...]
 # for s in range(0, 10):
 #     for i in range(0, cropped_img_data[s].shape[2]-1):
@@ -63,8 +69,8 @@ for s in cropped_myocar_labels:
 unet_input = methods.data_normalization(unet_input)
 unet_labels = methods.data_normalization(unet_labels)
 
-unet_input = unet_input.reshape((979, resolution,resolution, 1))
-unet_labels = unet_labels.reshape((979, resolution,resolution, 1))
+unet_input = unet_input.reshape((number_of_images, resolution, resolution, 1))
+unet_labels = unet_labels.reshape((number_of_images, resolution, resolution, 1))
 
 
 

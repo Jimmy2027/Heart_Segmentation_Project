@@ -116,7 +116,9 @@ def display(img_data, block = True):
     slice_1 = img_data[:, center_j, :]
     slice_2 = img_data[:, :, center_k]
 
-    show_slices([slice_0, slice_1, slice_2])
+    # show_slices([slice_0, slice_1, slice_2])
+    show_slices([slice_0])
+
 
     plt.suptitle("Center slices for image")
     plt.show(block = block)
