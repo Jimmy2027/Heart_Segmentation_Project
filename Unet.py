@@ -59,7 +59,7 @@ def unet(input_size, pretrained_weights=None):
     model = Model(input=inputs, output=conv10)
 
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
-
+    #try dice
     # model.summary()
 
     if (pretrained_weights):

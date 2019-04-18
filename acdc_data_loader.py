@@ -7,6 +7,9 @@ TODO:
 """
 import numpy as np
 import methods
+import matplotlib.pyplot as plt
+import cv2 as cv
+
 
 
 data_dir = 'ACDC_dataset/training'
@@ -37,40 +40,37 @@ img_data = methods.remove_empty_label_data(img_data, empty_labels)
 
 
 cropper_size = 32
-resolution = 2*cropper_size
+
+
+resolution = 2 * cropper_size
 cropped_img_data = methods.crop_images(cropper_size, center_of_masses, img_data)
 cropped_myocar_labels = methods.crop_images(cropper_size, center_of_masses, myocar_labels)
 
-number_of_images = 0
-for s in cropped_img_data:
-    for i in range(0, s.shape[0] - 1):
-        number_of_images = number_of_images + 1
 
 
-number_of_slices_per_image = []
-unet_input = np.empty((number_of_images, resolution, resolution))
-unet_labels = np.empty((number_of_images, resolution, resolution))
-counter = 0
-for s in cropped_img_data:
-    number_of_slices_per_image.append(s.shape[0])
-    for i in range(0, s.shape[0]-1):
-        unet_input[counter, ...] = s[i, ...]
+unet_input = np.concatenate(cropped_img_data, axis = 0)
+unet_labels = np.concatenate(cropped_myocar_labels, axis = 0)
 
-for s in cropped_myocar_labels:
-    for i in range(0, s.shape[0]-1):
-        unet_labels[counter, ...] = s[i, ...]
-# for s in range(0, 10):
-#     for i in range(0, cropped_img_data[s].shape[2]-1):
-#         plt.imshow(cropped_myocar_labels[s][i])
-#         plt.show()
-#         plt.imshow(cropped_img_data[s][i])
-#         plt.show()
+
 
 unet_input = methods.data_normalization(unet_input)
-unet_labels = methods.data_normalization(unet_labels)
 
-unet_input = unet_input.reshape((number_of_images, resolution, resolution, 1))
-unet_labels = unet_labels.reshape((number_of_images, resolution, resolution, 1))
+
+number_of_images = len(unet_input)
+print(len(unet_input))
+
+
+for i in range(len(unet_input) - 1, 0, -1):
+    if np.count_nonzero(unet_input[i]) == 0 or np.count_nonzero(unet_labels[i]) == 0:
+
+        unet_input = np.delete(unet_input, i, 0)
+        unet_labels = np.delete(unet_labels, i, 0)
+
+
+print(len(unet_input))
+
+unet_input = np.expand_dims(unet_input, -1)  #-1 for the last element
+unet_labels = np.expand_dims(unet_labels, -1)
 
 
 
@@ -78,11 +78,28 @@ unet_labels = unet_labels.reshape((number_of_images, resolution, resolution, 1))
 np.save('unet_input', unet_input)
 np.save('unet_labels', unet_labels)
 
-# for i in range(0, 10):
-#     methods.display(cropped_myocar_labels[i])
-#     methods.display(cropped_img_data[i])
 
-# nt.network_trainer(cropper_size, unet_input, unet_labels)
+
 
 def get_cropper_size():
     return cropper_size
+
+
+
+
+
+""" 
+plot 10 first image with their labels
+"""
+#
+# for s in range(0, 10):
+#     for i in range(0, cropped_img_data[s].shape[2]-1):
+#         # plt.imshow(cv.addWeighted(cropped_img_data[s][i], alpha= 1, src2 = cropped_myocar_labels[s][i], beta = 1, gamma = 0), plt.cm.gray)
+#         # plt.show()
+#         plt.imshow(cropped_myocar_labels[s][i], plt.cm.gray)
+#         plt.show()
+#         plt.imshow(cropped_img_data[s][i], plt.cm.gray)
+#         plt.show()
+
+
+#TODO why are there still empty images?
