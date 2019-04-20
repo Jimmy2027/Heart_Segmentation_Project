@@ -81,8 +81,8 @@ np.save('unet_labels', unet_labels)
 
 
 
-def get_cropper_size():
-    return cropper_size
+def get_resolution():
+    return resolution
 
 
 
