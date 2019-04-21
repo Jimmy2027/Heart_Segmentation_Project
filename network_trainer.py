@@ -16,7 +16,7 @@ x_train, x_test , y_train, y_test = model_selection.train_test_split(unet_input,
 np.save('x_test', x_test)
 np.save('y_test', y_test)
 
-
+#temp something
 
 print(np.shape(x_train), np.shape(y_train))
 

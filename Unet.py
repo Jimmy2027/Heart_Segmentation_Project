@@ -90,3 +90,6 @@ def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
 
 
     return model
+
+
+#temp something
