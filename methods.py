@@ -168,10 +168,12 @@ def crop_images(cropper_size, center_of_masses, data):
             center_i = int(center_of_masses[s][i][0])
             center_j = int(center_of_masses[s][i][1])
 
-            # print('center_i - cropper_size', center_i - cropper_size)
-            # print('center_j - cropper_size', center_j - cropper_size)
-            # TODO for cropper_size = 32, center_j - cropper_size = -1 -> need to pad?
-            temp[i] = data[s][..., i][center_i - cropper_size: center_i + cropper_size, center_j - cropper_size: center_j + cropper_size]
+            if center_j - cropper_size > 0 and center_i - cropper_size > 0:
+
+                # print('center_i - cropper_size', center_i - cropper_size)
+                # print('center_j - cropper_size', center_j - cropper_size)
+                # TODO for cropper_size = 64, center_j - cropper_size = -1 -> need to pad?
+                temp[i] = data[s][..., i][center_i - cropper_size: center_i + cropper_size, center_j - cropper_size: center_j + cropper_size]
 
         cropped_data.append(temp)
     return cropped_data

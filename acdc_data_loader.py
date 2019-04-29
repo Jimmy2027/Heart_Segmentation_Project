@@ -1,8 +1,9 @@
 """
 TODO:
-    - normalize the data
-    - need test set
-
+    - can't find a good dice implementation
+    - implement cardiac_MRI_dataset
+    - need to try other network architectures
+    - want 0 or 1 at the end -add threshold layer softmax
 
 """
 import numpy as np
@@ -39,7 +40,7 @@ img_data = methods.remove_empty_label_data(img_data, empty_labels)
 
 
 
-cropper_size = 32
+cropper_size = 64
 
 
 resolution = 2 * cropper_size
@@ -85,13 +86,12 @@ def get_resolution():
     return resolution
 
 
-#temp something
 
 
 """ 
 plot 10 first image with their labels
 """
-#
+
 # for s in range(0, 10):
 #     for i in range(0, cropped_img_data[s].shape[2]-1):
 #         # plt.imshow(cv.addWeighted(cropped_img_data[s][i], alpha= 1, src2 = cropped_myocar_labels[s][i], beta = 1, gamma = 0), plt.cm.gray)

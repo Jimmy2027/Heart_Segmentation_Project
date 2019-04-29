@@ -1,13 +1,17 @@
-import network_trainer as nt
-import acdc_data_loader as acdc
-import methods
+
+
 import numpy as np
-from keras.models import load_model
-from matplotlib import pyplot as plt
-from sklearn import model_selection
 
-unet_input = np.load('unet_input.npy')
-unet_labels = np.load('unet_labels.npy')
+import scoring_utils as su
 
-x_train, x_test , y_train, y_test = model_selection.train_test_split(unet_input,unet_labels, test_size= 0.3)
 
+y_test = np.load('y_test.npy')
+y_pred = np.load('y_pred.npy')
+y_test = np.array(y_test)
+y_pred = np.array(y_pred)
+n_x = 128
+n_y = 128
+mask_test = [[1 for x in range(0, n_x - 1)] for y in range(0, n_y -1)]
+n_z = 1
+n_subjects = 100
+su.evaluate(y_pred, y_test, mask_test, n_subjects, n_x, n_y, n_z)

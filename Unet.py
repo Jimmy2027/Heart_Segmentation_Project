@@ -10,6 +10,88 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as keras
 
 
+def segnetwork(img_shape, kernel_size,Dropout_rate):
+    model = Sequential()
+
+    # Encoder Layers
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same', input_shape=img_shape))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(64, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(64, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2), padding='same'))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2), padding='same'))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2), padding='same'))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(256, kernel_size, activation='relu', padding='same'))
+    model.add(MaxPooling2D((2, 2), padding='same'))
+    model.add(Dropout(Dropout_rate))
+    # Decoder Layers
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(UpSampling2D((2, 2)))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(UpSampling2D((2, 2)))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(64, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(64, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(64, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(UpSampling2D((2, 2)))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(UpSampling2D((2, 2)))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
+    model.add(BatchNormalization())
+    model.add(UpSampling2D((2, 2)))
+    model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(2, 1, activation='sigmoid', padding='same'))
+
+
+
+    return model
+
 def unet(input_size, pretrained_weights=None):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
@@ -92,4 +174,15 @@ def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
     return model
 
 
-#temp something
+def twolayernetwork(img_shape, kernel_size, Dropout_rate):
+    model = Sequential()
+
+    model.add(Conv2D(32, kernel_size, activation='relu', padding='same', input_shape=img_shape))
+    model.add(BatchNormalization())
+    model.add(Conv2D(1, kernel_size, activation='sigmoid', padding='same'))
+    model.add(BatchNormalization())
+
+
+
+    return model
+
