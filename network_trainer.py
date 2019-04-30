@@ -2,25 +2,23 @@ import Unet as unet
 from matplotlib import pyplot as plt
 import numpy as np
 from keras.callbacks import ModelCheckpoint
-import acdc_data_loader as acdc
 from sklearn import model_selection
 import scoring_utils as su
 import torch
-
+import os
 import json
+import pandas as pd
 
 
-resolution = acdc.get_resolution()
 
 unet_input = np.load('unet_input.npy')
 unet_labels = np.load('unet_labels.npy')
-
+resolution = unet_input.shape[1]
 x_train, x_test , y_train, y_test = model_selection.train_test_split(unet_input, unet_labels, test_size=0.3)
 
 np.save('x_test', x_test)
 np.save('y_test', y_test)
 
-#temp something
 
 print(np.shape(x_train), np.shape(y_train))
 
@@ -28,21 +26,40 @@ print(np.shape(x_train), np.shape(y_train))
 
 validation_split_val = 0.25
 batch_size = 32
-epochs = 50
+epochs = 10
 input_size = (resolution, resolution, 1)
 kernel_size = 3
 Dropout_rate = 0.5
 
-#model = unet.unet(input_size)
-# model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', verbose=1, save_best_only=True)
-# history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, callbacks=[model_checkpoint], verbose =1)
-model = unet.smallsegnetwork(input_size, kernel_size, Dropout_rate)
-model.summary()
-model.compile(loss='binary_crossentropy',
-                  optimizer='adam',
-                  metrics=['accuracy'])
-history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose =1)
+
+
+
+model, whichmodel = unet.unet(input_size)
+model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', verbose=1, save_best_only=True)
+history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, callbacks=[model_checkpoint], verbose =1)
+
+
+
+
+
+# model, whichmodel = unet.twolayernetwork(input_size, kernel_size, Dropout_rate)
+# model.summary()
+# model.compile(loss='binary_crossentropy',
+#                   optimizer='adam',
+#                   metrics=['accuracy'])
+# history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose =1)
+
+
+
+if not os.path.exists('Results/' + whichmodel):
+    os.makedirs('Results/' + whichmodel)
+save_dir = 'Results/' + whichmodel
+
+
+
 print(history.history.keys())
+
+
 
 # Plot training & validation accuracy values
 plt.plot(history.history['acc'])
@@ -52,7 +69,7 @@ plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
-plt.savefig('accuracy_values.png')
+plt.savefig(os.path.join(save_dir,str(epochs) +'epochs_accuracy_values.png'))
 
 # Plot training & validation loss values
 plt.plot(history.history['loss'])
@@ -62,14 +79,15 @@ plt.ylabel('Loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
-plt.savefig('loss_values.png')
+plt.savefig(os.path.join(save_dir,str(epochs) +'epochs_loss_values.png'))
 
-model.save('test.h5')
+model.save(os.path.join(save_dir,str(epochs) +'epochs_test.h5'))
 
 
 y_pred = model.predict(x_test)
 
-np.save('y_pred', y_pred)
+np.save(os.path.join(save_dir,str(epochs) +'epochs_y_pred'), y_pred)
+np.save(os.path.join(save_dir,str(epochs) +'epochs_x_test'), x_test)
 
 
 y_test = np.array(y_test)
@@ -140,6 +158,10 @@ y_pred = y_pred.reshape((y_pred_shape))
 
 
 
+torch.save(results, os.path.join(save_dir,str(epochs) +'epochs_evaluation_results'))
+
+
+
 threshold, upper, lower = results['evaluation_thresholds'], 1, 0
 y_pred = np.where(y_pred > threshold, upper, lower)
 
@@ -154,10 +176,8 @@ for i in range(0, 6):
     ax = plt.subplot(2, 6, 6 + i + 1)
     plt.imshow(y_pred[i,:,:,0], plt.cm.gray)
 
-plt.savefig('results.png', bbox_inches='tight')
+plt.savefig(os.path.join(save_dir,str(epochs) +'epochs_results.png'), bbox_inches='tight')
 
-
-torch.save(results, 'evaluation_results')
 
 
 something = 0

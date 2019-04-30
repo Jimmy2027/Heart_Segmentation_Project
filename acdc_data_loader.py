@@ -4,6 +4,7 @@ TODO:
     - implement cardiac_MRI_dataset
     - need to try other network architectures
     - want 0 or 1 at the end -add threshold layer softmax
+    - tensorboard
 
 """
 import numpy as np

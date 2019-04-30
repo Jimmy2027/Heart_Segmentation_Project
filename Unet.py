@@ -86,11 +86,11 @@ def segnetwork(img_shape, kernel_size,Dropout_rate):
     model.add(BatchNormalization())
     model.add(UpSampling2D((2, 2)))
     model.add(Dropout(Dropout_rate))
-    model.add(Conv2D(2, 1, activation='sigmoid', padding='same'))
+    model.add(Conv2D(1, 1, activation='sigmoid', padding='same'))
 
+    whichmodel = 'segnet'
 
-
-    return model
+    return model, whichmodel
 
 def unet(input_size, pretrained_weights=None):
     inputs = Input(input_size)
@@ -147,7 +147,8 @@ def unet(input_size, pretrained_weights=None):
     if (pretrained_weights):
         model.load_weights(pretrained_weights)
 
-    return model
+    whichmodel = 'unet'
+    return model, whichmodel
 
 #
 def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
@@ -170,8 +171,8 @@ def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
     model.add(BatchNormalization())
     model.add(Conv2D(1, 1, activation='sigmoid', padding='same'))
 
-
-    return model
+    whichmodel = 'smallsegnetwork'
+    return model, whichmodel
 
 
 def twolayernetwork(img_shape, kernel_size, Dropout_rate):
@@ -182,7 +183,7 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
     model.add(Conv2D(1, kernel_size, activation='sigmoid', padding='same'))
     model.add(BatchNormalization())
 
+    whichmodel = 'twolayernetwork'
 
-
-    return model
+    return model, whichmodel
 
