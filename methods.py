@@ -10,6 +10,7 @@ import metrics_acdc
 import collections
 from collections import Counter
 from scipy import ndimage as nd
+import imageio
 
 
 
@@ -188,6 +189,57 @@ def remove_empty_label_data(data, empty_labels):
     return data
 
 
+def save_datavisualisation(img_data, myocar_labels, save_folder):
+
+    counter = 0
+    for i, j in zip(img_data[:], myocar_labels[:]):
+        print(counter)
+        i_patch = i[:, :, 0]
+        np.squeeze(i_patch)
+
+        j_patch = j[:, :, 0]
+        np.squeeze(j_patch)
+        j_patch = j_patch * 200
+        for slice in range(1, i.shape[2]):
+            temp = i[:, :, slice]
+            np.squeeze(temp)
+            i_patch = np.hstack((i_patch, temp))
+
+            temp = j[:, :, slice]
+            np.squeeze(temp)
+            temp = temp * 200
+            j_patch = np.hstack((j_patch, temp))
+
+        image = np.vstack((i_patch, j_patch))
+
+        print(image.shape)
+        imageio.imwrite('visualisation/data/' + str(counter) + save_folder + '.png', image)
+        counter = counter + 1
+
+
+
+
+def recreate(img_data):
+    """
+    rearranges the input data patientwise
+    :param img_data:
+    :return:
+    """
+    x_test = np.load('unet_input.npy')
+    y_test = np.load('unet_labels.npy')
+    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], x_test.shape[2]))
+    y_test = np.reshape(y_test, (y_test.shape[0], y_test.shape[1], y_test.shape[2]))
+    patients_images = []
+    patients_labels = []
+    counter = 0
+    for person, t in enumerate(img_data):
+        h = t.shape[2]
+        x_temp = np.moveaxis(x_test[counter:counter+h, :, :], 0, -1)
+        y_temp = np.moveaxis(y_test[counter:counter+h, :, :], 0, -1)
+        patients_images.append(x_temp)
+        patients_labels.append(y_temp)
+        counter = counter + h + 1
+    return patients_images, patients_labels
 
 
 

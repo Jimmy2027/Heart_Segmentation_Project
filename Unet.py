@@ -10,7 +10,7 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as keras
 
 
-def segnetwork(img_shape, kernel_size,Dropout_rate):
+def segnetwork(img_shape, kernel_size, Dropout_rate):
     model = Sequential()
 
     # Encoder Layers
@@ -86,6 +86,7 @@ def segnetwork(img_shape, kernel_size,Dropout_rate):
     model.add(BatchNormalization())
     model.add(UpSampling2D((2, 2)))
     model.add(Dropout(Dropout_rate))
+    model.add(Conv2D(2,1, activation='relu', padding='same'))  #try this
     model.add(Conv2D(1, 1, activation='sigmoid', padding='same'))
 
     whichmodel = 'segnet'

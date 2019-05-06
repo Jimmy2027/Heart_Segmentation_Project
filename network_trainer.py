@@ -13,7 +13,9 @@ import pandas as pd
 
 unet_input = np.load('unet_input.npy')
 unet_labels = np.load('unet_labels.npy')
+
 resolution = unet_input.shape[1]
+
 x_train, x_test , y_train, y_test = model_selection.train_test_split(unet_input, unet_labels, test_size=0.3)
 
 np.save('x_test', x_test)
@@ -35,7 +37,12 @@ Dropout_rate = 0.5
 
 
 model, whichmodel = unet.unet(input_size)
-model_checkpoint = ModelCheckpoint('unet.hdf5', monitor='loss', verbose=1, save_best_only=True)
+
+if not os.path.exists('Results/' + whichmodel):
+    os.makedirs('Results/' + whichmodel)
+save_dir = 'Results/' + whichmodel
+
+model_checkpoint = ModelCheckpoint(os.path.join(save_dir, str(epochs) +'epochs_unet.hdf5'), monitor='loss', verbose=1, save_best_only=True)
 history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, callbacks=[model_checkpoint], verbose =1)
 
 
@@ -51,9 +58,7 @@ history = model.fit(x_train, y_train, validation_split=validation_split_val, epo
 
 
 
-if not os.path.exists('Results/' + whichmodel):
-    os.makedirs('Results/' + whichmodel)
-save_dir = 'Results/' + whichmodel
+
 
 
 
@@ -86,7 +91,6 @@ model.save(os.path.join(save_dir,str(epochs) +'epochs_test.h5'))
 
 y_pred = model.predict(x_test)
 
-np.save(os.path.join(save_dir,str(epochs) +'epochs_y_pred'), y_pred)
 np.save(os.path.join(save_dir,str(epochs) +'epochs_x_test'), x_test)
 
 
@@ -165,6 +169,11 @@ torch.save(results, os.path.join(save_dir,str(epochs) +'epochs_evaluation_result
 threshold, upper, lower = results['evaluation_thresholds'], 1, 0
 y_pred = np.where(y_pred > threshold, upper, lower)
 
+
+np.save(os.path.join(save_dir,str(epochs) +'epochs_y_pred'), y_pred)
+
+
+
 plt.figure(figsize=(resolution, resolution))
 
 for i in range(0, 6):
@@ -178,6 +187,6 @@ for i in range(0, 6):
 
 plt.savefig(os.path.join(save_dir,str(epochs) +'epochs_results.png'), bbox_inches='tight')
 
-
+#imsave
 
 something = 0

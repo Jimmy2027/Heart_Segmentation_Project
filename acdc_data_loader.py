@@ -1,9 +1,10 @@
 """
 TODO:
-    - can't find a good dice implementation
-    - implement cardiac_MRI_dataset
-    - need to try other network architectures
-    - want 0 or 1 at the end -add threshold layer softmax
+    - find out why black labels -> visualize data
+        - recreate postpreporcessing data arranged in persons
+    - create unet with variable number of layers, check what goes wrong
+    - implement variable amount of data -> variable number of persons
+    - calculate threshold for validation set not test set
     - tensorboard
 
 """
@@ -28,6 +29,8 @@ labels_paths.sort()
 myocar_labels = methods.remove_other_segmentations(labels_paths)  # array with all the myocar labels
 img_data = methods.load_data(images_paths)  # array with all the heart images
 shape = img_data[0].shape
+
+
 
 
 center_of_masses, empty_labels = methods.find_center_of_mass(myocar_labels)
@@ -80,11 +83,17 @@ unet_labels = np.expand_dims(unet_labels, -1)
 np.save('unet_input', unet_input)
 np.save('unet_labels', unet_labels)
 
+patientwise_preprocessed_images, patientwise_preprocessed_labels = methods.recreate(img_data)
+
+
+methods.save_datavisualisation(img_data, myocar_labels, 'untouched_data')
+
+methods.save_datavisualisation(patientwise_preprocessed_images, patientwise_preprocessed_labels, 'preprocessed_data')
 
 
 
-def get_resolution():
-    return resolution
+
+complex = 0
 
 
 
