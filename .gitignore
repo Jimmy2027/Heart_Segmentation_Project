@@ -15,3 +15,5 @@ Group project.docx
 __pycache__
 test.h5
 Results
+unet_input.npy
+unet_labels.npy

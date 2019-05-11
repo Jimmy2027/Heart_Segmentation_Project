@@ -12,7 +12,41 @@ from collections import Counter
 from scipy import ndimage as nd
 
 
+def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_folder, index_first = False, normalized = False):
+    if index_first == True:
+        for i in range(0, len(img_data)):
+            img_data[i] = np.moveaxis(img_data[i], 0, -1)
+            myocar_labels[i] = np.moveaxis(myocar_labels[i], 0, -1)
+            predicted_labels[i] = np.moveaxis(predicted_labels[i], 0, -1)
 
+
+    counter = 0
+
+    i_patch = img_data[0]
+
+    if normalized == True:
+        i_patch=i_patch *255
+
+    j_patch = myocar_labels[0]
+
+    k_patch = predicted_labels[0]
+
+    for i, j, k in zip(img_data[:10], myocar_labels[:10], predicted_labels[:10]):
+        # print(counter)
+        # print(i.shape)
+        if counter != 0:
+            if normalized == True:
+                i = i * 255
+            i_patch = np.hstack((i_patch, i))
+            j = j * 255
+            j_patch = np.hstack((j_patch, j))
+            k = k * 255
+            k_patch = np.hstack((k_patch,k))
+
+        image = np.vstack((i_patch, j_patch, k_patch))
+        counter = counter + 1
+    # print(image.shape)
+    imageio.imwrite(save_folder + '%d.png' % (counter,), image)
 
 def find_middle(img_data):  #TODO here I am taking the middle of the image, what I want is to have the middle of the segmentation though
     """

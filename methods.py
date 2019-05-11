@@ -19,24 +19,27 @@ import imageio
 def data_normalization(data):
     """
 
-    :param data: np array (979, 64, 64)
+    :param
     :return:
     """
 
     for i in data:
-        i = i*1.
-        i = np.clip(i, 0, np.percentile(i, 99))
+        for j in range(0, i.shape[0]):
+            print(i.shape)
+            print(j)
+            i[j] = i[j]*1.
+            i[j] = np.clip(i[j], 0, np.percentile(i[j], 99))
 
-        i = i - np.amin(i)
-        if np.amax(i) != 0:
-            i = i / np.amax(i)
+            i[j] = i[j] - np.amin(i[j])
+            if np.amax(i[j]) != 0:
+                i[j] = i[j] / np.amax(i[j])
     return data
 
 
 
 def remove_other_segmentations(labels):
     """
-    removes all other segmentations apart from the myocardium one
+    loads labels and removes all other segmentations apart from the myocardium one
 
     :param label: list of strings with paths to labels
     :return: array with all the myocar labels
@@ -69,7 +72,7 @@ def load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, labe
 
                 if not x.startswith('.'):
                     # print('x: ' , data_dir + '/' + x)
-                    # print('path: ', os.path.join(data_dir, o) + raw_image_path01)
+                    # print('path: ','/' os.path.join(data_dir, o) + raw_image_path01)
                     # print(data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path01) or (
                     #         data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path12)
                     if (data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path01) or (
@@ -131,7 +134,7 @@ def find_center_of_mass(data):
     """
 
     :param data: array of images with shape (n_i, n_j, n_k)
-    :return: list of arrays (of length n_k)  with the center of mass for each of these images (n_i, n_j) and list of empty labels
+    :return: list of arrays (of length n_k)  with the center of mass for each of these images (n_i, n_j) and list of empty labels (which patient, which slice)
     """
     coms = []
     print(np.shape(data))
@@ -162,9 +165,11 @@ def crop_images(cropper_size, center_of_masses, data):
     :return: returns np.array of cropped images
     """
     cropped_data = []
-    for s in range(0, len(data)-1):
+    counter = 0
+
+    for s in range(0, len(data)):
         temp = np.empty((data[s].shape[2], 2*cropper_size, 2*cropper_size))
-        for i in range(0, data[s].shape[2]-1):
+        for i in range(0, data[s].shape[2]):
 
             center_i = int(center_of_masses[s][i][0])
             center_j = int(center_of_masses[s][i][1])
@@ -173,115 +178,184 @@ def crop_images(cropper_size, center_of_masses, data):
 
                 # print('center_i - cropper_size', center_i - cropper_size)
                 # print('center_j - cropper_size', center_j - cropper_size)
-                # TODO for cropper_size = 64, center_j - cropper_size = -1 -> need to pad?
+
                 temp[i] = data[s][..., i][center_i - cropper_size: center_i + cropper_size, center_j - cropper_size: center_j + cropper_size]
 
+                # imageio.imwrite('visualisation/data/while_cropping/' + str(counter) + 'label' + '.png', temp[i,:,:])
+                counter = counter + 1
+            else:
+
+                padded = np.pad(data[s][...,i],((50,50),(50,50)),'constant')
+
+                temp[i] = padded[center_i + 50 - cropper_size: center_i + 50 + cropper_size, center_j + 50 - cropper_size: center_j + 50 + cropper_size]
         cropped_data.append(temp)
+
+
     return cropped_data
 
 
 
 
 def remove_empty_label_data(data, empty_labels):
+    """
+
+    :param data:
+    :param empty_labels: (which_person, which_slice)
+    :return: data without the slices that have empty segemtnations
+    """
     for i in empty_labels:
 
         data[i[0]] = np.delete(data[i[0]], i[1], 2)
     return data
 
 
-def save_datavisualisation(img_data, myocar_labels, save_folder):
+def save_datavisualisation2(img_data, myocar_labels, save_folder, index_first = False, normalized = False):
+    if index_first == True:
+        for i in range(0, len(img_data)):
+            img_data[i] = np.moveaxis(img_data[i], 0, -1)
+            myocar_labels[i] = np.moveaxis(myocar_labels[i], 0, -1)
 
     counter = 0
     for i, j in zip(img_data[:], myocar_labels[:]):
         print(counter)
+        print(i.shape)
         i_patch = i[:, :, 0]
-        np.squeeze(i_patch)
+        if normalized == True:
+            i_patch = i_patch*255
+        # np.squeeze(i_patch)
 
         j_patch = j[:, :, 0]
-        np.squeeze(j_patch)
-        j_patch = j_patch * 200
+        # np.squeeze(j_patch)
+        j_patch = j_patch * 255
         for slice in range(1, i.shape[2]):
             temp = i[:, :, slice]
-            np.squeeze(temp)
+            # np.squeeze(temp)
+            if normalized == True:
+                temp = temp * 255
             i_patch = np.hstack((i_patch, temp))
 
+
             temp = j[:, :, slice]
-            np.squeeze(temp)
-            temp = temp * 200
+            # np.squeeze(temp)
+            temp = temp * 255
             j_patch = np.hstack((j_patch, temp))
 
         image = np.vstack((i_patch, j_patch))
 
         print(image.shape)
-        imageio.imwrite('visualisation/data/' + str(counter) + save_folder + '.png', image)
+        imageio.imwrite('visualisation/' + save_folder + '%d.png' % (counter,), image)
+        counter = counter + 1
+
+def save_datavisualisation2(img_data, myocar_labels, save_folder, index_first = False, normalized = False):
+    if index_first == True:
+        for i in range(0, len(img_data)):
+            img_data[i] = np.moveaxis(img_data[i], 0, -1)
+            myocar_labels[i] = np.moveaxis(myocar_labels[i], 0, -1)
+
+    counter = 0
+    for i, j in zip(img_data[:], myocar_labels[:]):
+        print(counter)
+        print(i.shape)
+        i_patch = i[:, :, 0]
+        if normalized == True:
+            i_patch = i_patch*255
+        # np.squeeze(i_patch)
+
+        j_patch = j[:, :, 0]
+        # np.squeeze(j_patch)
+        j_patch = j_patch * 255
+        for slice in range(1, i.shape[2]):
+            temp = i[:, :, slice]
+            # np.squeeze(temp)
+            if normalized == True:
+                temp = temp * 255
+            i_patch = np.hstack((i_patch, temp))
+
+
+            temp = j[:, :, slice]
+            # np.squeeze(temp)
+            temp = temp * 255
+            j_patch = np.hstack((j_patch, temp))
+
+        image = np.vstack((i_patch, j_patch))
+
+        print(image.shape)
+        imageio.imwrite('visualisation/' + save_folder + '%d.png' % (counter,), image)
+        counter = counter + 1
+
+
+def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_folder, index_first = False, normalized = False):
+
+    if index_first == True:
+        for i in range(0, len(img_data)):
+            img_data[i] = np.moveaxis(img_data[i], 0, -1)
+            myocar_labels[i] = np.moveaxis(myocar_labels[i], 0, -1)
+            predicted_labels[i] = np.moveaxis(predicted_labels[i], 0, -1)
+    counter = 0
+    for i, j, k in zip(img_data[:], myocar_labels[:], predicted_labels[:]):
+        print(counter)
+        print(i.shape)
+        i_patch = i[:, :, 0]
+        if normalized == True:
+            i_patch = i_patch*255
+        # np.squeeze(i_patch)
+
+        j_patch = j[:, :, 0]
+        # np.squeeze(j_patch)
+        j_patch = j_patch * 255
+
+        k_patch = k[:,:,0]
+        k_patch = k_patch*255
+
+        for slice in range(1, i.shape[2]):
+            temp = i[:, :, slice]
+            # np.squeeze(temp)
+            if normalized == True:
+                temp = temp * 255
+            i_patch = np.hstack((i_patch, temp))
+
+
+            temp = j[:, :, slice]
+            # np.squeeze(temp)
+            temp = temp * 255
+            j_patch = np.hstack((j_patch, temp))
+
+            temp = k[:,:,slice]
+            temp = temp*255
+            k_patch = np.hstack((k_patch, temp))
+
+        image = np.vstack((i_patch, j_patch, k_patch))
+
+        print(image.shape)
+        imageio.imwrite(save_folder + '%d.png' % (counter,), image)
         counter = counter + 1
 
 
 
 
-def recreate(img_data):
+
+def recreate(img_data, data):
     """
     rearranges the input data patientwise
     :param img_data:
     :return:
     """
-    x_test = np.load('unet_input.npy')
-    y_test = np.load('unet_labels.npy')
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], x_test.shape[2]))
-    y_test = np.reshape(y_test, (y_test.shape[0], y_test.shape[1], y_test.shape[2]))
+    # data = np.load('unet_input.npy')
+    # y_test = np.load('unet_labels.npy')
+    data = np.reshape(data, (data.shape[0], data.shape[1], data.shape[2]))
+    # y_data = np.reshape(y_data, (y_data.shape[0], y_data.shape[1], y_data.shape[2]))
     patients_images = []
-    patients_labels = []
+    # patients_labels = []
     counter = 0
     for person, t in enumerate(img_data):
         h = t.shape[2]
-        x_temp = np.moveaxis(x_test[counter:counter+h, :, :], 0, -1)
-        y_temp = np.moveaxis(y_test[counter:counter+h, :, :], 0, -1)
+        x_temp = np.moveaxis(data[counter:counter+h, :, :], 0, -1)
+        # y_temp = np.moveaxis(y_data[counter:counter+h, :, :], 0, -1)
         patients_images.append(x_temp)
-        patients_labels.append(y_temp)
+        # patients_labels.append(y_temp)
         counter = counter + h + 1
-    return patients_images, patients_labels
-
-
-
-# data_path = 'ACDC_dataset/training/patient001/patient001_frame01.nii.gz'
-# pred_path = 'ACDC_dataset/training/patient001/patient001_frame01_gt.nii.gz'
-#
-# metrics_acdc.main(data_path, data_path)
-#
-# data = nib.load(data_path)
-# mask = nib.load(pred_path)
-# print(data)
-# # masker = NiftiMasker(mask_img=mask, standardize=True)
-# plotting.plot_roi(mask, bg_img=data,
-#                   cmap='Paired')
-#
-# plotting.show()
+    return patients_images
 
 
 
 
-
-
-# plotting.plot_img(first_img)
-
-# header = data.header
-#
-# plotting.plot_img(header)
-# plotting.show()
-# print(data)
-
-# data = img.get_data()
-
-
-"""
-Shows all 30 images of first 4D image
-"""
-#
-# for img in image.iter_img(data):
-#     header = img.header
-#     masker = NiftiMasker(mask_img=header, standardize=True)
-#     plotting.plot_roi(masker, bg_img=img,
-#                       cmap='Paired')
-#     # plotting.plot_img(first_img)
-#
-#     plotting.show()
