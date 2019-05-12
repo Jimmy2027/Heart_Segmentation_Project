@@ -137,7 +137,7 @@ def find_center_of_mass(data):
     :return: list of arrays (of length n_k)  with the center of mass for each of these images (n_i, n_j) and list of empty labels (which patient, which slice)
     """
     coms = []
-    print(np.shape(data))
+    # print(np.shape(data))
     empty_labels = []
     for s in range(0, len(data)):
         com = []
@@ -152,7 +152,7 @@ def find_center_of_mass(data):
 
         coms.append(com)
 
-    print(np.shape(coms))
+    # print(np.shape(coms))
     return coms, empty_labels
 
 
@@ -185,9 +185,9 @@ def crop_images(cropper_size, center_of_masses, data):
                 counter = counter + 1
             else:
 
-                padded = np.pad(data[s][...,i],((50,50),(50,50)),'constant')
+                padded = np.pad(data[s][...,i],((64,64),(64,64)),'constant')
 
-                temp[i] = padded[center_i + 50 - cropper_size: center_i + 50 + cropper_size, center_j + 50 - cropper_size: center_j + 50 + cropper_size]
+                temp[i] = padded[center_i + 64 - cropper_size: center_i + 64 + cropper_size, center_j + 64 - cropper_size: center_j + 64 + cropper_size]
         cropped_data.append(temp)
 
 
@@ -285,14 +285,16 @@ def save_datavisualisation2(img_data, myocar_labels, save_folder, index_first = 
 
 
 def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_folder, index_first = False, normalized = False):
-
+    img_data_temp = []
+    myocar_labels_temp = []
+    predicted_labels_temp = []
     if index_first == True:
         for i in range(0, len(img_data)):
-            img_data[i] = np.moveaxis(img_data[i], 0, -1)
-            myocar_labels[i] = np.moveaxis(myocar_labels[i], 0, -1)
-            predicted_labels[i] = np.moveaxis(predicted_labels[i], 0, -1)
+            img_data_temp.append(np.moveaxis(img_data[i], 0, -1))
+            myocar_labels_temp.append(np.moveaxis(myocar_labels[i], 0, -1))
+            predicted_labels_temp.append(np.moveaxis(predicted_labels[i], 0, -1))
     counter = 0
-    for i, j, k in zip(img_data[:], myocar_labels[:], predicted_labels[:]):
+    for i, j, k in zip(img_data_temp[:], myocar_labels_temp[:], predicted_labels_temp[:]):
         print(counter)
         print(i.shape)
         i_patch = i[:, :, 0]
