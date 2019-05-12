@@ -3,6 +3,7 @@ TODO:
 
     - create unet with variable number of layers, check what goes wrong
     - tensorboard
+    - center_of_mass for york dataset?
 
 """
 import numpy as np

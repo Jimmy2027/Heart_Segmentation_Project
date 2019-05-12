@@ -12,8 +12,8 @@ import methods
 import random
 from sklearn.metrics import roc_curve, auc
 
-whichdataset = 'ACDC'
-# whichdataset = 'York'
+# whichdataset = 'ACDC'
+whichdataset = 'York'
 # whichmodel = 'param_unet'
 whichmodel = 'twolayernetwork'
 
@@ -26,12 +26,8 @@ layers = 2
 
 
 if whichdataset == 'York':
-    unet_input = np.load('YCMRI_128x128_images.npy')
-    unet_labels = np.load('YCMRI_128x128_labels.npy')
-    unet_input = np.concatenate(unet_input, axis = 0)
-    unet_labels = np.concatenate(unet_labels, axis= 0)
-    unet_input = np.expand_dims(unet_input, -1)
-    unet_labels = np.expand_dims(unet_labels, -1)
+    input = np.load('YCMRI_128x128_images.npy')
+    labels = np.load('YCMRI_128x128_labels.npy')
     path = 'York_results'
 
 if whichdataset == 'ACDC':
@@ -44,19 +40,22 @@ if whichdataset == 'ACDC':
     path = 'ACDC_results'
 
 
-images_paths, labels_paths = methods.load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, label_path12)
-images_paths.sort()   # each label should be on the same index than its corresponding image
-labels_paths.sort()
+    images_paths, labels_paths = methods.load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, label_path12)
+    images_paths.sort()   # each label should be on the same index than its corresponding image
+    labels_paths.sort()
 
-img_data = methods.load_data(images_paths)
+    img_data = methods.load_data(images_paths)
 
-input = np.load('unet_input.npy')
-labels = np.load('unet_labels.npy')
 
-#TODO variable amount of slices per person? (in percentages)
-total_number_of_patients = len(input)
+    input = np.load('unet_input.npy')
+    labels = np.load('unet_labels.npy')
+
+
 unet_input = []
 unet_labels = []
+#TODO variable amount of slices per person? (in percentages)
+total_number_of_patients = len(input)
+
 random_patient_num = [random.sample(range(total_number_of_patients-1), number_of_patients)]
 
 for i in random_patient_num[0]:
