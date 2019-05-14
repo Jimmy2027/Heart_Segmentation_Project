@@ -12,8 +12,8 @@ import methods
 import random
 from sklearn.metrics import roc_curve, auc
 
-# whichdataset = 'ACDC'
-whichdataset = 'York'
+whichdataset = 'ACDC'
+# whichdataset = 'York'
 # whichmodel = 'param_unet'
 whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
@@ -24,6 +24,9 @@ filters = 64
 # max 5 layers with 96x96
 layers = 2
 epochs = 1
+
+
+all_results = []
 
 
 
@@ -186,7 +189,10 @@ for number_of_patients in arr_number_of_patients:
         upper, lower = 1, 0
 
         results = {
-            "median_ROC_AUC": "median_ROC_AUC",
+            "median_ROC_AUC_": "median_ROC_AUC",
+            "number_of_patients" : number_of_patients,
+            "threshold": threshold,
+            "epochs": epochs,
             "dice": "dice",
             "roc_auc": "roc_auc",
             "median_dice_score": "median_dice_score"
@@ -221,7 +227,14 @@ for number_of_patients in arr_number_of_patients:
 
         methods.save_datavisualisation3(x_test, y_test, output, os.path.join(save_dir,str(threshold) + 'thr_'), True, True)
 
+        all_results.append(results)
 
 
 
+median_dice_scores = []
+for i in all_results:
+    median_dice_scores.append(i["median_dice_score"])
+
+best_index = median_dice_scores.index(max(median_dice_scores))
+print(' BEST MEDIAN DICE SCORE:', median_dice_scores[best_index], 'with', all_results[best_index]["number_of_patients"], 'number of patients and threshold=', all_results[best_index]["threshold"], 'and epochs = ', all_results[best_index]["epochs"])
 
