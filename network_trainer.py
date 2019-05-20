@@ -64,7 +64,7 @@ total_number_of_patients = len(input)
 
 
 arr_number_of_patients = [total_number_of_patients-1, int(total_number_of_patients*0.25), int(total_number_of_patients*0.5), int(total_number_of_patients*0.75)]
-
+arr_number_of_patients = [2]
 
 
 for number_of_patients in arr_number_of_patients:
@@ -129,7 +129,7 @@ for number_of_patients in arr_number_of_patients:
 
     if whichmodel == 'param_unet' or whichmodel == 'unet':
 
-        model_checkpoint = ModelCheckpoint(save_dir+'/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True)
+        model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True)
         history = model.fit(x_train, y_train, steps_per_epoch=1, epochs=epochs, callbacks=[model_checkpoint])
     else:
         model.summary()
@@ -142,35 +142,30 @@ for number_of_patients in arr_number_of_patients:
 
 
 
-
-
-
-
-
     print(history.history.keys())
 
 
-    #
-    # # Plot training & validation accuracy values
-    # plt.plot(history.history['acc'])
+
+    # Plot training & validation accuracy values
+    plt.plot(history.history['acc'])
     # plt.plot(history.history['val_acc'])
-    # plt.title('Model accuracy')
-    # plt.ylabel('Accuracy')
-    # plt.xlabel('Epoch')
-    # plt.legend(['Train', 'Test'], loc='upper left')
-    # plt.show()
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
     # plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
-    #
-    # # Plot training & validation loss values
-    # plt.plot(history.history['loss'])
+
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
     # plt.plot(history.history['val_loss'])
-    # plt.title('Model loss')
-    # plt.ylabel('Loss')
-    # plt.xlabel('Epoch')
-    # plt.legend(['Train', 'Test'], loc='upper left')
-    # plt.show()
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.show()
     # plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
-    #
+
     # model.save(os.path.join(save_dir, str(epochs) +'epochs_test.h5'))
 
     y_pred = []
@@ -220,6 +215,8 @@ for number_of_patients in arr_number_of_patients:
         results["median_ROC_AUC"] = median_ROC_AUC
         results["dice"] = dice
         results["roc_auc"] = roc_auc
+        results["threshold"] = threshold
+        results["epochs"] = epochs
         torch.save(results, os.path.join(save_dir, str(epochs) + 'epochs_evaluation_results'))
 
         print('DICE SCORE: ' + str(median_dice_score))
@@ -230,11 +227,8 @@ for number_of_patients in arr_number_of_patients:
         all_results.append(results)
 
 
+best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
 
-median_dice_scores = []
-for i in all_results:
-    median_dice_scores.append(i["median_dice_score"])
-
-best_index = median_dice_scores.index(max(median_dice_scores))
-print(' BEST MEDIAN DICE SCORE:', median_dice_scores[best_index], 'with', all_results[best_index]["number_of_patients"], 'number of patients and threshold=', all_results[best_index]["threshold"], 'and epochs = ', all_results[best_index]["epochs"])
-
+print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
+      'number of patients, threshold =', all_results[best_idx]["threshold"], ', epochs = ',
+      all_results[best_idx]["epochs"])

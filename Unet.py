@@ -236,3 +236,11 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
 
     return model
 
+
+if __name__ == '__main__':      #only gets called if Unet.py is run
+
+    model = unet((128,128,1), 64, 9)
+
+    from keras.utils import plot_model
+
+    plot_model(model, to_file='param_unet.png', show_shapes=True)
