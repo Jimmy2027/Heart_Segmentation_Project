@@ -2,6 +2,9 @@
 TODO:
 
     - create unet with variable number of layers, check what goes wrong
+    - folder aufräumen
+    - evaluation set
+    - visualise input
     - tensorboard
     - center_of_mass for york dataset?
 
