@@ -81,7 +81,7 @@ np.save('unet_labels', cropped_myocar_labels)
 
 
 # methods.save_datavisualisation(patientwise_preprocessed_images, patientwise_preprocessed_labels, 'after_normalization/preprocessed_data',False)
-# methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'data/after_normalization/', index_first=True, normalized=True)
+methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'data/after_normalization/', index_first=True, normalized=True)
 
 
 

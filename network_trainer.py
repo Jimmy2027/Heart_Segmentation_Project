@@ -14,8 +14,8 @@ from sklearn.metrics import roc_curve, auc
 
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-# whichmodel = 'param_unet'
-whichmodel = 'twolayernetwork'
+whichmodel = 'param_unet'
+# whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
 
@@ -23,7 +23,8 @@ whichmodel = 'twolayernetwork'
 filters = 64
 # max 5 layers with 96x96
 layers_arr = [2,3,4,5,6,7,8,9]
-epochs = 10
+# layers_array = [1]
+epochs = 100
 
 
 all_results = []
@@ -61,8 +62,8 @@ unet_input = []
 unet_labels = []
 #TODO variable amount of slices per person? (in percentages)
 
-total_number_of_patients = len(input)
-# total_number_of_patients = 20
+# total_number_of_patients = len(input)
+total_number_of_patients = 20
 
 arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -154,8 +155,9 @@ for layers in layers_arr:
         plt.ylabel('Accuracy')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
+
         plt.show()
-        # plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
 
         # Plot training & validation loss values
         plt.plot(history.history['loss'])
@@ -164,8 +166,9 @@ for layers in layers_arr:
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
+        plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
+
         plt.show()
-        # plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
 
         # model.save(os.path.join(save_dir, str(epochs) +'epochs_test.h5'))
 
@@ -188,7 +191,8 @@ for layers in layers_arr:
             "roc_auc": "roc_auc",
             "median_dice_score": "median_dice_score",
             "validation_split_val": validation_split_val,
-            "unet_layers:": layers
+            "unet_layers": layers,
+            "filters": filters
         }
         dice = []
         roc_auc = []
@@ -218,7 +222,7 @@ for layers in layers_arr:
         print('DICE SCORE: ' + str(median_dice_score))
         print('ROC AUC:', str(median_ROC_AUC))
 
-        methods.save_datavisualisation3(x_test, y_test, output, save_dir+'/'+ str(layers)+'layers', True, True)
+        methods.save_datavisualisation3(x_test, y_test, output, save_dir+'/' + str(layers)+'layers', True, True)
 
         all_results.append(results)
 
