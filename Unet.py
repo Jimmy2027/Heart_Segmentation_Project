@@ -197,8 +197,8 @@ def unet(input_size, pretrained_weights=None):
     if (pretrained_weights):
         model.load_weights(pretrained_weights)
 
-    whichmodel = 'unet'
-    return model, whichmodel
+
+    return model
 
 #
 def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
@@ -239,8 +239,8 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
 
 if __name__ == '__main__':      #only gets called if Unet.py is run
 
-    model = unet((128,128,1), 64, 9)
+    model = param_unet((128,128,1), 64, 8)
 
     from keras.utils import plot_model
 
-    plot_model(model, to_file='param_unet.png', show_shapes=True)
+    plot_model(model, to_file='param_unet8.png', show_shapes=True)

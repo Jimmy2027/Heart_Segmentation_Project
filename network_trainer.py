@@ -14,7 +14,9 @@ from sklearn.metrics import roc_curve, auc
 
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-whichmodel = 'param_unet'
+# whichmodel = 'param_unet'
+whichmodel = 'unet'
+
 # whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
@@ -22,9 +24,10 @@ whichmodel = 'param_unet'
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-layers_arr = [2,3,4,5,6,7,8,9]
-# layers_array = [1]
-epochs = 100
+# layers_arr = [8,7,6,5,4,3,2]
+
+layers_arr = [1]
+epochs = 30
 
 
 all_results = []
@@ -62,8 +65,8 @@ unet_input = []
 unet_labels = []
 #TODO variable amount of slices per person? (in percentages)
 
-# total_number_of_patients = len(input)
-total_number_of_patients = 20
+total_number_of_patients = len(input)
+# total_number_of_patients = 20
 
 arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -107,6 +110,9 @@ for layers in layers_arr:
         if whichmodel == 'param_unet':
             model = unet.param_unet(input_size, filters, layers)
 
+        if whichmodel == 'unet':
+            model = unet.unet(input_size)
+
 
         if whichmodel == 'twolayernetwork':
             model = unet.twolayernetwork(input_size, kernel_size, Dropout_rate)
@@ -132,7 +138,7 @@ for layers in layers_arr:
         if whichmodel == 'param_unet' or whichmodel == 'unet':
 
             model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=10)
-            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint], validation_split=validation_split_val)
+            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint], validation_split= validation_split_val)
         else:
             model.summary()
             model.compile(loss='binary_crossentropy',
@@ -192,7 +198,8 @@ for layers in layers_arr:
             "median_dice_score": "median_dice_score",
             "validation_split_val": validation_split_val,
             "unet_layers": layers,
-            "filters": filters
+            "filters": filters,
+            "input_size": input_size
         }
         dice = []
         roc_auc = []
