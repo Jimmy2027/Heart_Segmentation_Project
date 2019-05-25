@@ -15,8 +15,8 @@ import keras
 
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-whichmodel = 'param_unet'
-# whichmodel = 'unet'
+# whichmodel = 'param_unet'
+whichmodel = 'unet'
 
 # whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
@@ -25,9 +25,9 @@ whichmodel = 'param_unet'
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-layers_arr = [8,7,6,5,4,3,2]
+# layers_arr = [8,7,6,5,4,3,2]
 
-# layers_arr = [1]
+layers_arr = [1]
 epochs = 1
 
 

@@ -12,20 +12,17 @@ import torch
 
 
 import keras.backend as K
-def dice_coef(y_true, y_pred, smooth, thresh):
-    y_pred = y_pred > thresh
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    y_pred_f = tf.cast(y_pred_f, tf.float32)
-    sdf =y_true_f * y_pred_f
-    intersection = K.sum(sdf)
+def dice_coef(y_true, y_pred, smooth=1):
+    """
+    Dice = (2*|X & Y|)/ (|X|+ |Y|)
+         =  2*sum(|A*B|)/(sum(A^2)+sum(B^2))
+    ref: https://arxiv.org/pdf/1606.04797v1.pdf
+    """
+    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
+    return (2. * intersection + smooth) / (K.sum(K.square(y_true),-1) + K.sum(K.square(y_pred),-1) + smooth)
 
-    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
-def dice_loss(smooth, thresh):
-  def dice(y_true, y_pred):
-    return -dice_coef(y_true, y_pred, smooth, thresh)
-  return dice
+def dice_coef_loss(y_true, y_pred):
+    return 1-dice_coef(y_true, y_pred)
 
 
 def segnetwork(img_shape, kernel_size, Dropout_rate):
@@ -198,7 +195,7 @@ def unet(input_size, pretrained_weights=None):
 
     model = Model(input=inputs, output=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=dice_loss(smooth=1e-5, thresh=0.5), metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy'])
     #try dice
     # model.summary()
 
