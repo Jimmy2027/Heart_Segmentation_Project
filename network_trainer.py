@@ -17,19 +17,19 @@ import keras
 whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-# whichmodel = 'param_unet'
+whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
 # whichmodel = 'twolayernetwork'
-whichmodel = 'segnetwork'
+# whichmodel = 'segnetwork'
 
 
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-# layers_arr = [8,7,6,5,4,3,2]
+layers_arr = [8,7,6,5,4,3,2]
 
-layers_arr = [1]
+# layers_arr = [1]
 epochs = 100
 
 
@@ -111,7 +111,7 @@ for layers in layers_arr:
 
 
         if whichmodel == 'param_unet':
-            model = unet.param_unet(input_size, filters, layers,whichloss, dropout_rate=Dropout_rate)
+            model = unet.param_unet(input_size, filters, layers,Dropout_rate, whichloss)
 
         if whichmodel == 'unet':
             model = unet.unet(input_size, whichloss)
@@ -143,12 +143,12 @@ for layers in layers_arr:
         if whichmodel == 'param_unet' or whichmodel == 'unet':
 
             model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=10)
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='auto',
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
             history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_split= validation_split_val)
         else:
             model.summary()
-            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='auto',
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
             if whichloss == 'dice':
                 model.compile(loss=unet.dice_coef_loss,
