@@ -59,7 +59,7 @@ if whichdataset == 'ACDC':
 
 
     input = np.load('unet_input.npy', allow_pickle=True)
-    labels = np.load('unet_labels.npy')
+    labels = np.load('unet_labels.npy', allow_pickle=True)
 
 
 unet_input = []
