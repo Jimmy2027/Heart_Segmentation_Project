@@ -40,7 +40,7 @@ import re
 import argparse
 import nibabel as nib
 import pandas as pd
-from medpy.metric.binary import hd, dc
+#from medpy.metric.binary import hd, dc
 import numpy as np
 
 
