@@ -13,13 +13,15 @@ import random
 from sklearn.metrics import roc_curve, auc
 import keras
 
+# whichloss = 'binary_crossentropy'
+whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
-whichmodel = 'unet'
+# whichmodel = 'unet'
 
 # whichmodel = 'twolayernetwork'
-# whichmodel = 'segnetwork'
+whichmodel = 'segnetwork'
 
 
 # number_of_patients = 10
@@ -28,7 +30,7 @@ filters = 64
 # layers_arr = [8,7,6,5,4,3,2]
 
 layers_arr = [1]
-epochs = 1
+epochs = 100
 
 
 all_results = []
@@ -66,8 +68,8 @@ unet_input = []
 unet_labels = []
 #TODO variable amount of slices per person? (in percentages)
 
-# total_number_of_patients = len(input)
-total_number_of_patients = 20
+total_number_of_patients = len(input)
+# total_number_of_patients = 20
 
 arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -109,10 +111,10 @@ for layers in layers_arr:
 
 
         if whichmodel == 'param_unet':
-            model = unet.param_unet(input_size, filters, layers, dropout_rate=Dropout_rate)
+            model = unet.param_unet(input_size, filters, layers,whichloss, dropout_rate=Dropout_rate)
 
         if whichmodel == 'unet':
-            model = unet.unet(input_size)
+            model = unet.unet(input_size, whichloss)
 
 
         if whichmodel == 'twolayernetwork':
@@ -129,11 +131,13 @@ for layers in layers_arr:
             os.makedirs(path)
         if not os.path.exists(path + '/' + whichmodel):
             os.makedirs(path + '/' + whichmodel)
-        if not os.path.exists(path + '/'+whichmodel+'/'+str(number_of_patients)+'patients'):
-            os.makedirs(path + '/'+whichmodel+'/'+ str(number_of_patients)+'patients')
-        if not os.path.exists(path + '/'+whichmodel+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers'):
-            os.makedirs(path + '/'+whichmodel+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers')
-        save_dir = path + '/' + whichmodel +'/' + str(number_of_patients)+'patients/'+ str(layers)+'layers'
+        if not os.path.exists(path + '/' + whichmodel + '/' + whichloss):
+            os.makedirs(path + '/' + whichmodel+ '/' + whichloss)
+        if not os.path.exists(path + '/'+whichmodel+ '/' + whichloss+'/'+str(number_of_patients)+'patients'):
+            os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients')
+        if not os.path.exists(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers'):
+            os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers')
+        save_dir = path + '/' + whichmodel +'/' + whichloss+'/' + str(number_of_patients)+'patients/'+ str(layers)+'layers'
 
 
         if whichmodel == 'param_unet' or whichmodel == 'unet':
@@ -146,9 +150,15 @@ for layers in layers_arr:
             model.summary()
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
-            model.compile(loss=unet.dice_loss(y_true, y_pred),
+            if whichloss == 'dice':
+                model.compile(loss=unet.dice_coef_loss,
                           optimizer='adam',
                           metrics=['accuracy'])
+            if whichloss == 'binary_crossentropy':
+                model.compile(loss='binary_crossentropy',
+                              optimizer='adam',
+                              metrics=['accuracy'])
+
             history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose=1, callbacks=[early_stopping])
 
 
@@ -205,7 +215,8 @@ for layers in layers_arr:
             "validation_split_val": validation_split_val,
             "unet_layers": layers,
             "filters": filters,
-            "input_size": input_size
+            "input_size": input_size,
+            "loss": whichloss
         }
         dice = []
         roc_auc = []

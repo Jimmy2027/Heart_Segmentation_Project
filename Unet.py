@@ -104,11 +104,11 @@ def segnetwork(img_shape, kernel_size, Dropout_rate):
     model.add(Conv2D(2,1, activation='relu', padding='same'))  #try this
     model.add(Conv2D(1, 1, activation='sigmoid', padding='same'))
 
-    whichmodel = 'segnet'
 
-    return model, whichmodel
 
-def param_unet(input_size, filters, layers, dropout_rate, pretrained_weights=None):
+    return model
+
+def param_unet(input_size, filters, layers, dropout_rate, whichloss, pretrained_weights=None):
     inputs = Input(input_size)
     print('Inputs in UNet Shape: ' + str(inputs.shape))
     conv_down = np.empty(layers, dtype=object)
@@ -138,7 +138,12 @@ def param_unet(input_size, filters, layers, dropout_rate, pretrained_weights=Non
 
     model = Model(input=inputs, output=conv_final)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    if whichloss == 'dice':
+        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy'])
+    if whichloss == 'binary_crossentropy':
+        model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+
+
 
     model.summary()
 
@@ -147,7 +152,7 @@ def param_unet(input_size, filters, layers, dropout_rate, pretrained_weights=Non
 
     return model
 
-def unet(input_size, pretrained_weights=None):
+def unet(input_size, whichloss, pretrained_weights=None):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
@@ -195,7 +200,11 @@ def unet(input_size, pretrained_weights=None):
 
     model = Model(input=inputs, output=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy'])
+    if whichloss == 'dice':
+        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy'])
+    if whichloss == 'binary_crossentropy':
+        model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+
     #try dice
     # model.summary()
 
