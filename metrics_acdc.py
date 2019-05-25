@@ -26,7 +26,7 @@ After the installation, you have two ways of running this script:
     2) python metrics.py ground_truth/ prediction/
 
 The first option will print in the console the dice and volume of each class for the given image.
-The second option wiil ouput a csv file where each images will have the dice and volume of each class.
+The second option wiil ouput a csv file where each images will have the dice and vols   ume of each class.
 
 
 Link: http://acdc.creatis.insa-lyon.fr

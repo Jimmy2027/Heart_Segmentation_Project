@@ -11,11 +11,12 @@ import pandas as pd
 import methods
 import random
 from sklearn.metrics import roc_curve, auc
+import keras
 
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-# whichmodel = 'param_unet'
-whichmodel = 'unet'
+whichmodel = 'param_unet'
+# whichmodel = 'unet'
 
 # whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
@@ -24,10 +25,10 @@ whichmodel = 'unet'
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-# layers_arr = [8,7,6,5,4,3,2]
+layers_arr = [8,7,6,5,4,3,2]
 
-layers_arr = [1]
-epochs = 30
+# layers_arr = [1]
+epochs = 1
 
 
 all_results = []
@@ -57,7 +58,7 @@ if whichdataset == 'ACDC':
     img_data = methods.load_data(images_paths)
 
 
-    input = np.load('unet_input.npy')
+    input = np.load('unet_input.npy', allow_pickle=True)
     labels = np.load('unet_labels.npy')
 
 
@@ -65,8 +66,8 @@ unet_input = []
 unet_labels = []
 #TODO variable amount of slices per person? (in percentages)
 
-total_number_of_patients = len(input)
-# total_number_of_patients = 20
+# total_number_of_patients = len(input)
+total_number_of_patients = 20
 
 arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -108,7 +109,7 @@ for layers in layers_arr:
 
 
         if whichmodel == 'param_unet':
-            model = unet.param_unet(input_size, filters, layers)
+            model = unet.param_unet(input_size, filters, layers, dropout_rate=Dropout_rate)
 
         if whichmodel == 'unet':
             model = unet.unet(input_size)
@@ -138,13 +139,17 @@ for layers in layers_arr:
         if whichmodel == 'param_unet' or whichmodel == 'unet':
 
             model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=10)
-            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint], validation_split= validation_split_val)
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='auto',
+                                          baseline=None, restore_best_weights=False)
+            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_split= validation_split_val)
         else:
             model.summary()
-            model.compile(loss='binary_crossentropy',
+            early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=1, mode='auto',
+                                          baseline=None, restore_best_weights=False)
+            model.compile(loss=unet.dice_loss(y_true, y_pred),
                           optimizer='adam',
                           metrics=['accuracy'])
-            history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose=1)
+            history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose=1, callbacks=[early_stopping])
 
 
 
@@ -171,7 +176,7 @@ for layers in layers_arr:
         plt.title('Model loss')
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.legend(['Train', 'Validation'], loc='upper left')
         plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
 
         plt.show()
@@ -192,6 +197,7 @@ for layers in layers_arr:
         results = {
             "median_ROC_AUC_": "median_ROC_AUC",
             "number_of_patients" : number_of_patients,
+            "model" : whichmodel,
             "epochs": epochs,
             "dice": "dice",
             "roc_auc": "roc_auc",
