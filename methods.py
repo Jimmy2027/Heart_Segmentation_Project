@@ -248,7 +248,7 @@ def save_datavisualisation2(img_data, myocar_labels, save_folder, index_first = 
 
 
 
-def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_folder, index_first = False, normalized = False):
+def save_datavisualisation3(img_data, myocar_labels, predicted_labels,median_dice_score, save_folder, index_first = False, normalized = False):
     img_data_temp = []
     myocar_labels_temp = []
     predicted_labels_temp = []
@@ -293,7 +293,7 @@ def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_fold
         image = np.vstack((i_patch, j_patch, k_patch))
 
         print(image.shape)
-        imageio.imwrite(save_folder + '%d.png' % (counter,), image)
+        imageio.imwrite(save_folder + median_dice_score + 'mds' + '%d.png' % (counter,), image)
         counter = counter + 1
 
 

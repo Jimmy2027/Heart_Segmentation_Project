@@ -17,20 +17,20 @@ import keras
 whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-whichmodel = 'param_unet'
+# whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-# whichmodel = 'twolayernetwork'
+whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
 
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-layers_arr = [8,7,6,5,4,3,2]
+# layers_arr = [8,7,6,5,4,3,2]
 
-# layers_arr = [1]
-epochs = 100
+layers_arr = [1]
+epochs = 1
 
 
 all_results = []
@@ -39,8 +39,8 @@ all_results = []
 
 
 if whichdataset == 'York':
-    input = np.load('YCMRI_128x128_images.npy')
-    labels = np.load('YCMRI_128x128_labels.npy')
+    input = np.load('YCMRI_128x128_images.npy', allow_pickle=True)
+    labels = np.load('YCMRI_128x128_labels.npy', allow_pickle=True)
     path = 'York_results'
 
 if whichdataset == 'ACDC':
@@ -132,17 +132,17 @@ for layers in layers_arr:
         if not os.path.exists(path + '/' + whichmodel):
             os.makedirs(path + '/' + whichmodel)
         if not os.path.exists(path + '/' + whichmodel + '/' + whichloss):
-            os.makedirs(path + '/' + whichmodel+ '/' + whichloss)
-        if not os.path.exists(path + '/'+whichmodel+ '/' + whichloss+'/'+str(number_of_patients)+'patients'):
-            os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients')
-        if not os.path.exists(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers'):
+            os.makedirs(path + '/' + whichmodel + '/' + whichloss)
+        if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(number_of_patients)+'patients'):
+            os.makedirs(path + '/'+ whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients')
+        if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers'):
             os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(number_of_patients)+'patients/' + str(layers)+'layers')
         save_dir = path + '/' + whichmodel +'/' + whichloss+'/' + str(number_of_patients)+'patients/'+ str(layers)+'layers'
 
 
         if whichmodel == 'param_unet' or whichmodel == 'unet':
 
-            model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=10)
+            model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=25)
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
             history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_split= validation_split_val)
@@ -246,7 +246,7 @@ for layers in layers_arr:
         print('DICE SCORE: ' + str(median_dice_score))
         print('ROC AUC:', str(median_ROC_AUC))
 
-        methods.save_datavisualisation3(x_test, y_test, output, save_dir+'/' + str(layers)+'layers', True, True)
+        methods.save_datavisualisation3(x_test, y_test, output, str(round(median_dice_score, 4)), save_dir+'/', True, True)
 
         all_results.append(results)
 
