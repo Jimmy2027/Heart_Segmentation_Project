@@ -17,7 +17,9 @@ import keras
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 whichlosses = ['binary_crossentropy', 'dice']
-whichmodels = ['unet', 'segnetwork', 'param_unet']
+# whichmodels = ['unet', 'segnetwork', 'param_unet']
+whichmodels = ['twolayernetwork']
+
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
@@ -37,7 +39,7 @@ for whichmodel in whichmodels:
             layers_arr = [5,4,3,2]
         else: layers_arr = [1]
 
-        epochs = 150
+        epochs = 1
 
 
         all_results = []
@@ -75,8 +77,8 @@ for whichmodel in whichmodels:
         unet_labels = []
         #TODO variable amount of slices per person? (in percentages)
 
-        total_number_of_patients = len(input)
-        # total_number_of_patients = 20
+        # total_number_of_patients = len(input)
+        total_number_of_patients = 20
 
         arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -259,6 +261,11 @@ for whichmodel in whichmodels:
 
 
             best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
+
+            plt.hist(np.unique(y_pred[0]))
+            plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
+                round(results['median_ROC_AUC'], 4)))
+            plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_hist.png'))
 
             print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
                   'number of patients, threshold =', ', epochs = ',

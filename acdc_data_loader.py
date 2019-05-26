@@ -2,7 +2,6 @@
 TODO:
 
     - create unet with variable number of layers, check what goes wrong
-    - put dice score as image title
     - tensorboard
     - center_of_mass for york dataset?
 

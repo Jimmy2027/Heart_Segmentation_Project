@@ -49,17 +49,17 @@ best_roc_idx = np.argmax([dict["median_ROC_AUC"] for dict in results])
 #       'number of patients, threshold =', results[best_idx]["threshold"], ', epochs = ',
 #       results[best_idx]["epochs"])
 
-print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_dice_score"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , 'epochs =', results[best_dice_idx]["epochs"], 'model =', results[best_dice_idx]['model'])
-print(' BEST MEDIAN ROC AUC:', results[best_roc_idx]["median_dice_score"], 'with', results[best_roc_idx]["number_of_patients"], 'number of patients, layers = ',results[best_roc_idx]['unet_layers'] , 'epochs =', results[best_roc_idx]["epochs"], 'model =', results[best_roc_idx]['model'])
+print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_dice_score"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , 'epochs =', results[best_dice_idx]["epochs"], 'model =', results[best_dice_idx]['model'], 'loss:', str(results[best_roc_idx]["loss"]))
+print(' BEST MEDIAN ROC AUC:', results[best_roc_idx]["median_ROC_AUC"], 'with', results[best_roc_idx]["number_of_patients"], 'number of patients, layers = ',results[best_roc_idx]['unet_layers'] , 'epochs =', results[best_roc_idx]["epochs"], 'model =', results[best_roc_idx]['model'], 'loss:', str(results[best_roc_idx]["loss"]))
 
 
-results,y_pred = read_dice_score(str(results[best_dice_idx]['model']), str(results[best_dice_idx]["median_dice_score"]), str(results[best_dice_idx]["number_of_patients"]), results[best_dice_idx]['unet_layers'])
+results, y_pred = read_dice_score(str(results[best_dice_idx]['model']), str(results[best_dice_idx]["loss"]), str(results[best_dice_idx]["number_of_patients"]), results[best_dice_idx]['unet_layers'])
 
 plt.hist(np.unique(y_pred[0]))
 plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(round(results['median_ROC_AUC'], 4)) )
 plt.show()
 
-results,y_pred = read_dice_score(str(results[best_roc_idx]['model']), str(results[best_roc_idx]["median_dice_score"]), str(results[best_roc_idx]["number_of_patients"]), results[best_roc_idx]['unet_layers'])
+results,y_pred = read_dice_score(str(results[best_roc_idx]['model']), str(results[best_roc_idx]["loss"]), str(results[best_roc_idx]["number_of_patients"]), results[best_roc_idx]['unet_layers'])
 
 # results, y_pred = read_dice_score('param_unet', 'dice', 118, 5)
 # results, y_pred = read_dice_score('unet', 'binary_crossentropy', 118, 1)
