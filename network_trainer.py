@@ -17,8 +17,8 @@ import keras
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 whichlosses = ['binary_crossentropy', 'dice']
-# whichmodels = ['unet', 'segnetwork', 'param_unet']
-whichmodels = ['twolayernetwork']
+whichmodels = ['unet', 'segnetwork', 'param_unet']
+# whichmodels = ['twolayernetwork']
 
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
@@ -77,8 +77,8 @@ for whichmodel in whichmodels:
         unet_labels = []
         #TODO variable amount of slices per person? (in percentages)
 
-        # total_number_of_patients = len(input)
-        total_number_of_patients = 20
+        total_number_of_patients = len(input)
+        # total_number_of_patients = 20
 
         arr_number_of_patients = [total_number_of_patients - 1]
 
@@ -187,7 +187,6 @@ for whichmodel in whichmodels:
                 plt.legend(['Train', 'Test'], loc='upper left')
                 plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
 
-                plt.show()
 
                 # Plot training & validation loss values
                 plt.plot(history.history['loss'])
@@ -198,7 +197,6 @@ for whichmodel in whichmodels:
                 plt.legend(['Train', 'Validation'], loc='upper left')
                 plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
 
-                plt.show()
 
                 # model.save(os.path.join(save_dir, str(epochs) +'epochs_test.h5'))
 
