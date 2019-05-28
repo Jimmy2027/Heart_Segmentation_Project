@@ -13,14 +13,14 @@ import random
 from sklearn.metrics import roc_curve, auc
 import keras
 
-# whichloss = 'binary_crossentropy'
-whichloss = 'dice'
+whichloss = 'binary_crossentropy'
+# whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
-# whichmodel = 'unet'
+whichmodel = 'unet'
 
-whichmodel = 'twolayernetwork'
+# whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
 
@@ -30,7 +30,7 @@ filters = 64
 # layers_arr = [8,7,6,5,4,3,2]
 
 layers_arr = [1]
-epochs = 1
+epochs = 100
 
 
 all_results = []
@@ -252,6 +252,11 @@ for layers in layers_arr:
 
 
     best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
+
+    plt.hist(np.unique(y_pred[0]))
+    plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
+        round(results['median_ROC_AUC'], 4)))
+    plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
 
     print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
           'number of patients, threshold =', ', epochs = ',

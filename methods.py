@@ -133,8 +133,8 @@ def display(img_data, block = True):
 def find_center_of_mass(data):
     """
 
-    :param data: array of images with shape (n_i, n_j, n_k)
-    :return: list of arrays (of length n_k)  with the center of mass for each of these images (n_i, n_j) and list of empty labels (which patient, which slice)
+    :param data: array of images with shape (x, y, z)
+    :return: list of arrays (of length z)  with the center of mass for each of these images (x, y) and list of empty labels (which patient, which slice)
     """
     coms = []
     # print(np.shape(data))
@@ -155,13 +155,37 @@ def find_center_of_mass(data):
     # print(np.shape(coms))
     return coms, empty_labels
 
+def york_find_center_of_mass(data):
+    """
+
+    :param data: array of images with shape (x, y, z)
+    :return: list of arrays (of length z)  with the center of mass for each of these images (x, y) and list of empty labels (which patient, which slice)
+    """
+    coms = []
+    # print(np.shape(data))
+    empty_labels = []
+    for s in range(0, len(data)):
+        com = []
+        for i in range(0, np.shape(data[s])[2]):
+            temp = np.array(sum(data[s][..., [i]]))
+            bool_temp = temp != 0
+
+            if sum(bool_temp) != 0:         #verify that label is non empty
+                com.append(nd.measurements.center_of_mass(data[s][..., [i]][..., 0]))
+
+            else: empty_labels.append((s, i))
+
+        coms.append(com)
+
+    # print(np.shape(coms))
+    return coms, empty_labels
 
 def crop_images(cropper_size, center_of_masses, data):
     """
 
     :param cropper_size:
-    :param center_of_masses:
-    :param data:
+    :param center_of_masses: list of lists of length z with the com (x,y)
+    :param data: array of images with shape (x, y, z)
     :return: returns np.array of cropped images
     """
     cropped_data = []
