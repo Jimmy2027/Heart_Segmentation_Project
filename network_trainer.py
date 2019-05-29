@@ -168,7 +168,7 @@ for layers in layers_arr:
         print(history.history.keys())
 
 
-
+        plt.figure()
         # Plot training & validation accuracy values
         plt.plot(history.history['acc'])
         plt.plot(history.history['val_acc'])
@@ -178,8 +178,8 @@ for layers in layers_arr:
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
 
-        plt.show()
 
+        plt.figure()
         # Plot training & validation loss values
         plt.plot(history.history['loss'])
         plt.plot(history.history['val_loss'])
@@ -189,7 +189,6 @@ for layers in layers_arr:
         plt.legend(['Train', 'Validation'], loc='upper left')
         plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
 
-        plt.show()
 
         # model.save(os.path.join(save_dir, str(epochs) +'epochs_test.h5'))
 
