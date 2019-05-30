@@ -1,8 +1,7 @@
 """
 TODO:
 
-    - create unet with variable number of layers, check what goes wrong
-    - york image preprocessing -> visualisation
+    - create own callback to plot images : https://keras.io/callbacks/
     - tensorboard
     - center_of_mass for york dataset?
 

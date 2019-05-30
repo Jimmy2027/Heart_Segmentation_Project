@@ -186,7 +186,7 @@ def crop_images(cropper_size, center_of_masses, data):
     :param cropper_size:
     :param center_of_masses: list of lists of length z with the com (x,y)
     :param data: array of images with shape (x, y, z)
-    :return: returns np.array of cropped images
+    :return: returns np.array of cropped images (z, x, y)
     """
     cropped_data = []
     counter = 0
@@ -212,6 +212,7 @@ def crop_images(cropper_size, center_of_masses, data):
                 padded = np.pad(data[s][...,i],((64,64),(64,64)),'constant')
 
                 temp[i] = padded[center_i + 64 - cropper_size: center_i + 64 + cropper_size, center_j + 64 - cropper_size: center_j + 64 + cropper_size]
+
         cropped_data.append(temp)
 
 

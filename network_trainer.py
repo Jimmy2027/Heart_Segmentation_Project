@@ -17,8 +17,8 @@ whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-# whichmodel = 'param_unet'
-whichmodel = 'unet'
+whichmodel = 'param_unet'
+# whichmodel = 'unet'
 
 # whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
@@ -27,9 +27,9 @@ whichmodel = 'unet'
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-# layers_arr = [8,7,6,5,4,3,2]
+layers_arr = [5,4,3,2]
 
-layers_arr = [1]
+# layers_arr = [1]
 epochs = 100
 
 
@@ -42,6 +42,12 @@ if whichdataset == 'York':
     input = np.load('YCMRI_128x128_images.npy', allow_pickle=True)
     labels = np.load('YCMRI_128x128_labels.npy', allow_pickle=True)
     path = 'York_results'
+    plt.figure()
+    for i in range(len(labels)):
+        plt.hist(np.unique(labels[i][:]))
+
+    plt.show()
+
 
 if whichdataset == 'ACDC':
 
@@ -63,6 +69,11 @@ if whichdataset == 'ACDC':
     input = np.load('unet_input.npy', allow_pickle=True)
     labels = np.load('unet_labels.npy', allow_pickle=True)
 
+    plt.figure()
+    for i in range(len(labels)):
+        plt.hist(np.unique(labels[i][:]))
+
+    plt.show()
 
 unet_input = []
 unet_labels = []
@@ -142,7 +153,7 @@ for layers in layers_arr:
 
         if whichmodel == 'param_unet' or whichmodel == 'unet':
 
-            model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=25)
+            model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=2000)
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
             history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_split= validation_split_val)
@@ -177,6 +188,7 @@ for layers in layers_arr:
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_accuracy_values.png'))
+        plt.close()
 
 
         plt.figure()
@@ -188,6 +200,7 @@ for layers in layers_arr:
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Validation'], loc='upper left')
         plt.savefig(os.path.join(save_dir, str(epochs) +'epochs_loss_values.png'))
+        plt.close()
 
 
         # model.save(os.path.join(save_dir, str(epochs) +'epochs_test.h5'))
@@ -231,7 +244,6 @@ for layers in layers_arr:
                 fpr, tpr, thresholds = roc_curve(y_true, y_pred_temp)
                 roc_auc.append(auc(fpr, tpr))
 
-
         median_ROC_AUC = np.median(roc_auc)
         median_dice_score = np.median(dice)
 
@@ -249,14 +261,16 @@ for layers in layers_arr:
 
         all_results.append(results)
 
+        torch.save(y_test, os.path.join(save_dir, 'y_test'))
 
     best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
 
+    plt.figure()
     plt.hist(np.unique(y_pred[0]))
     plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
         round(results['median_ROC_AUC'], 4)))
     plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
 
     print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
-          'number of patients, threshold =', ', epochs = ',
+          'number of patients,', ', epochs = ',
           all_results[best_idx]["epochs"])

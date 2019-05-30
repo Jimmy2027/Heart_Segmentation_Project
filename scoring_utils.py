@@ -132,8 +132,8 @@ def dice(im1, im2, empty_score=1.0):
     The order of inputs for `dice` is irrelevant. The result will be
     identical if `im1` and `im2` are switched.
     """
-    im1 = np.asarray(im1).astype(np.bool)
-    im2 = np.asarray(im2).astype(np.bool)
+    # im1 = np.asarray(im1).astype(np.bool)
+    # im2 = np.asarray(im2).astype(np.bool)
 
     if im1.shape != im2.shape:
         raise ValueError("Shape mismatch: im1 and im2 must have the same shape.")
@@ -143,7 +143,8 @@ def dice(im1, im2, empty_score=1.0):
         return empty_score
 
     # Compute Dice coefficient
-    intersection = np.logical_and(im1, im2)
+    # intersection = np.logical_and(im1, im2)
+    intersection = im1 * im2
 
     return 2. * intersection.sum() / im_sum
 

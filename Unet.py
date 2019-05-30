@@ -12,6 +12,7 @@ import torch
 
 
 import keras.backend as K
+
 def dice_coef(y_true, y_pred, smooth=1):
     """
     Dice = (2*|X & Y|)/ (|X|+ |Y|)
@@ -253,8 +254,8 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
 
 if __name__ == '__main__':      #only gets called if Unet.py is run
 
-    model = unet((128,128,1))
+    model = param_unet((128,128,1), 64, 5, 0.5, 'dice')
 
     from keras.utils import plot_model
 
-    plot_model(model, to_file='unet.png', show_shapes=True)
+    plot_model(model, to_file='param_unet5.png', show_shapes=True)
