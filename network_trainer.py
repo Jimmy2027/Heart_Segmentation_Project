@@ -17,20 +17,20 @@ whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-whichmodel = 'param_unet'
+# whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-# whichmodel = 'twolayernetwork'
+whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
 
 # number_of_patients = 10
 filters = 64
 # max 5 layers with 96x96
-layers_arr = [5,4,3,2]
+# layers_arr = [5,4,3,2]
 
-# layers_arr = [1]
-epochs = 100
+layers_arr = [1]
+epochs = 1
 
 
 all_results = []
@@ -156,7 +156,12 @@ for layers in layers_arr:
             model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=2000)
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                           baseline=None, restore_best_weights=False)
-            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_split= validation_split_val)
+            tensorboard = keras.callbacks.TensorBoard(log_dir=os.path.join(save_dir, '/logs'), histogram_freq=10, batch_size=32, write_graph=True,
+                                        write_grads=True, write_images=True, embeddings_freq=0,
+                                        embeddings_layer_names=None, embeddings_metadata=None, embeddings_data=None,
+                                        update_freq='epoch')
+
+            history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping, tensorboard], validation_split= validation_split_val)
         else:
             model.summary()
             early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',

@@ -13,9 +13,6 @@ from scipy import ndimage as nd
 import imageio
 
 
-
-
-
 def data_normalization(data):
     """
 
