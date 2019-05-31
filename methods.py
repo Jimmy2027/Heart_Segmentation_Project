@@ -11,6 +11,76 @@ import collections
 from collections import Counter
 from scipy import ndimage as nd
 import imageio
+import random
+from sklearn import model_selection
+
+def get_split(images, masks, split, seed):
+    # split in form of (0.2,0.2)
+    test_amount = int(images.shape[0]*split[0])
+    val_amount = int(images.shape[0]*split[1])
+    train_amount = images.shape[0] - test_amount - val_amount
+    print("******************************************")
+    print("TRAINING DATA: " + str(train_amount) + " patients")
+    print("VALIDATION DATA: " + str(val_amount) + " patients")
+    print("TEST DATA: " + str(test_amount) + " patients")
+    print("******************************************")
+
+    train_val_images, test_images, train_val_masks, test_masks = \
+            model_selection.train_test_split(images, masks, test_size=test_amount, random_state=seed)
+
+    train_images, val_images, train_masks, val_masks = \
+            model_selection.train_test_split(train_val_images, train_val_masks, test_size=val_amount, random_state=seed)
+
+    return train_images, train_masks, val_images, val_masks, test_images, test_masks
+
+def get_splits(images, masks, splits, seed):
+    # split in form of {1:(0.2, 0.2), 2:(0.3, 0.4)}
+    # return: {split1: {train_images_split1: (100,96,96), train_masks_split1: ... }, split2: {}} for every split
+
+    split_dicts = {}
+    j = 0
+    for split in splits.values():
+        split_data = {}
+        labels = ["train_images", "train_masks", "val_images", "val_masks",
+                  "test_images", "test_masks"]
+        train_images, train_masks, val_images, val_masks, test_images, test_masks = get_split(images, masks, split,
+                                                                                              seed)
+        data = [train_images, train_masks, val_images, val_masks, test_images, test_masks]
+        for i in range(len(data)):
+            split_data[labels[i]] = data[i]
+        split_dicts["Split#" + str(j)] = split_data
+        j += 1
+    return split_dicts
+
+
+def get_datasets(data, split_number):
+    index = "Split#" + str(split_number)
+    train_images = data[index].get("train_images")
+    train_masks = data[index].get("train_masks")
+    val_images = data[index].get("val_images")
+    val_masks = data[index].get("val_masks")
+    test_images = data[index].get("test_images")
+    test_masks = data[index].get("test_masks")
+
+    return train_images, train_masks, val_images, val_masks, test_images, test_masks
+
+
+def getalldata(images, masks, data_percs, splits, seed):
+    images_dict = {}
+    masks_dict = {}
+    split_dicts = {}
+    for i in range(len(data_percs)):
+        assert images.shape[0] == masks.shape[0]
+        amount = int(images.shape[0] * data_percs[i])
+        random.seed(seed)
+        ind = random.sample(range(images.shape[0]), amount)
+        images_dict[i] = images[ind]
+        masks_dict[i] = masks[ind]
+
+    for j in range(len(images_dict)):
+        split_dicts[str(data_percs[j]) + "Perc"] = get_splits(images_dict[j], masks_dict[j], splits, seed)
+
+    return split_dicts
 
 
 def data_normalization(data):
