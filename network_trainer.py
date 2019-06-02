@@ -13,26 +13,26 @@ import random
 from sklearn.metrics import roc_curve, auc
 import keras
 
-whichlosses = ['dice', 'binary_crossentropy']
-whichmodels = ['unet', 'segnetwork', 'param_unet']
-
 # whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
-
+whichlosses = ['binary_crossentropy', 'dice']
 # whichmodel = 'twolayernetwork'
-# whichmodel = 'segnetwork'
+whichmodels = ['param_unet', 'segnetwork', 'unet']
+
 
 
 seeds = [1, 2, 3]
-data_percs = [1, 0.75, 0.5, 0.25]  # between 0 and 1, not percentages
+data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
+# layers_arr = [5,4,3,2]
 
-epochs = 1
+# layers_arr = [1]
+epochs = 100
 
 
 all_results = []
@@ -71,11 +71,11 @@ if whichdataset == 'ACDC':
     input = np.load('unet_input.npy', allow_pickle=True)
     labels = np.load('unet_labels.npy', allow_pickle=True)
 
-    plt.figure()
-    for i in range(len(labels)):
-        plt.hist(np.unique(labels[i][:]))
-
-    plt.show()
+    # plt.figure()
+    # for i in range(len(labels)):                      #verfy that input labels are 0 and 1
+    #     plt.hist(np.unique(labels[i][:]))
+    #
+    # plt.show()
 
 data_dict = []
 for seed in seeds:
@@ -87,11 +87,11 @@ unet_labels = []
 for whichloss in whichlosses:
     for whichmodel in whichmodels:
         if whichmodel == 'param_unet':
-            layers_arr = [5, 4, 3, 2]
+            layers_arr = [2, 3, 4, 5, 6]
         else:
             layers_arr = [1]
-
         for layers in layers_arr:
+
             for perc_index in range(len(data_percs)):
                 for split_number in range(len(splits)):
                     data = data_dict[split_number][str(data_percs[perc_index]) + "Perc"]
@@ -103,9 +103,13 @@ for whichloss in whichlosses:
 
                     x_train = np.concatenate(x_train, axis = 0)
                     y_train = np.concatenate(y_train, axis = 0)
+                    x_val = np.concatenate(x_val, axis = 0)
+                    y_val = np.concatenate(y_val, axis= 0)
 
                     x_train = np.expand_dims(x_train, -1)  #-1 for the last element
                     y_train = np.expand_dims(y_train, -1)
+                    x_val = np.expand_dims(x_val, -1)
+                    y_val = np.expand_dims(y_val, -1)
 
 
 
@@ -276,11 +280,11 @@ for whichloss in whichlosses:
 
 
 
-        plt.figure()
-        plt.hist(np.unique(y_pred[0]))
-        plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
-            round(results['median_ROC_AUC'], 4)))
-        plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
+                plt.figure()
+                plt.hist(np.unique(y_pred[0]))
+                plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
+                    round(results['median_ROC_AUC'], 4)))
+                plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
 
 best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
 print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
