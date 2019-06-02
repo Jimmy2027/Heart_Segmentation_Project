@@ -1,3 +1,4 @@
+from medpy.metric.binary import hd, dc
 
 import numpy as np
 import pandas as pd
@@ -12,22 +13,22 @@ basepath = 'ACDC_results/'
 endfolder = False
 modalites = os.listdir(basepath)
 
-def read_dice_score(model, lossfunction, patients, layers):
-    for folder in  os.listdir(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers')):
+def read_dice_score(model, lossfunction, patients, layers, split):
+    for folder in  os.listdir(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', str(split) + 'split')):
         if folder.endswith('results'):
-            results = torch.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', folder))
+            results = torch.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', str(split) + 'split', folder))
         if folder.endswith('y_pred.npy'):
-            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', folder))
+            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', str(split) + 'split', folder))
     return results, y_pred
 
 
 
-def compute_dice_score(model, lossfunction, patients, layers):
+def compute_dice_score(model, lossfunction, patients, layers, split):
     for folder in os.listdir(
-        os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers')):
+        os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split')):
         if folder.endswith('y_pred.npy'):
-            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', folder))
-            y_test = torch.load(os.path.join(basepath, model, lossfunction, str(patients)+'patients', str(layers)+'layers', 'y_test'))
+            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', folder))
+            y_test = torch.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', 'y_test'))
 
     dice = []
     output = []
@@ -35,7 +36,7 @@ def compute_dice_score(model, lossfunction, patients, layers):
     for i in range(len(y_test)):
         output.append(np.squeeze(y_pred[i]))
         for s in range(y_test[i].shape[0]):
-            dice.append(su.dice(output[i][s], y_test[i][s]))
+            dice.append(dc(output[i][s], y_test[i][s]))
 
     median_dice_score = np.median(dice)
 
@@ -69,17 +70,17 @@ def print_best_scores():
 
 
 
-    print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_dice_score"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , 'epochs =', results[best_dice_idx]["epochs"], 'model =', results[best_dice_idx]['model'])
-    print(' BEST MEDIAN ROC AUC:', results[best_roc_idx]["median_dice_score"], 'with', results[best_roc_idx]["number_of_patients"], 'number of patients, layers = ',results[best_roc_idx]['unet_layers'] , 'epochs =', results[best_roc_idx]["epochs"], 'model =', results[best_roc_idx]['model'])
+    print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_dice_score"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , ', epochs =', results[best_dice_idx]["epochs"], ', model =', results[best_dice_idx]['model'], 'and split nr. ', results[best_dice_idx]['which_split'])
+    print(' BEST MEDIAN ROC AUC:', results[best_roc_idx]["median_dice_score"], 'with', results[best_roc_idx]["number_of_patients"], 'number of patients, layers = ',results[best_roc_idx]['unet_layers'] , ', epochs =', results[best_roc_idx]["epochs"], ', model =', results[best_roc_idx]['model'],'and split nr. ', results[best_roc_idx]['which_split'])
 
 
-    result, y_pred = read_dice_score(str(results[best_dice_idx]['model']), str(results[best_dice_idx]["loss"]), str(results[best_dice_idx]["number_of_patients"]), results[best_dice_idx]['unet_layers'])
+    result, y_pred = read_dice_score(str(results[best_dice_idx]['model']), str(results[best_dice_idx]["loss"]), str(results[best_dice_idx]["number_of_patients"]), results[best_dice_idx]['unet_layers'], results[best_dice_idx]['which_split'])
 
     plt.hist(np.unique(y_pred[0]))
     plt.title('mds: ' + str(round(result['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(round(result['median_ROC_AUC'], 4)) )
     plt.show()
 
-    result,y_pred = read_dice_score(str(results[best_roc_idx]['model']), str(results[best_roc_idx]["loss"]), str(results[best_roc_idx]["number_of_patients"]), results[best_roc_idx]['unet_layers'])
+    result,y_pred = read_dice_score(str(results[best_roc_idx]['model']), str(results[best_roc_idx]["loss"]), str(results[best_roc_idx]["number_of_patients"]), results[best_roc_idx]['unet_layers'],results[best_roc_idx]['which_split'])
 
     # results, y_pred = read_dice_score('param_unet', 'dice', 118, 5)
     # results, y_pred = read_dice_score('unet', 'binary_crossentropy', 118, 1)
@@ -90,7 +91,11 @@ def print_best_scores():
     plt.show()
 
 
-# median_dice_score = compute_dice_score('twolayernetwork', 'binary_crossentropy', 118, 1)
-print_best_scores()
 
+
+
+
+# median_dice_score = compute_dice_score('twolayernetwork', 'binary_crossentropy', 1, 2, 0)
+print_best_scores()
+# results, y_pred = read_dice_score('twolayernetwork', 'binary_crossentropy', 0.25, 1, 0)
 something = 0

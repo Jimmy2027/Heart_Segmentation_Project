@@ -142,12 +142,10 @@ def load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, labe
                     # print('path: ','/' os.path.join(data_dir, o) + raw_image_path01)
                     # print(data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path01) or (
                     #         data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path12)
-                    if (data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path01) or (
-                            data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path12):
+                    if (not(x.endswith('_gt.nii.gz')) and x.endswith('nii.gz') and not(x.endswith('4d.nii.gz'))):
                         im_data.append(data_dir + '/' + o + '/' + x)
 
-                    if data_dir + '/' + x == (os.path.join(data_dir, o) + label_path01) or data_dir + '/' + x == (
-                            os.path.join(data_dir, o) + label_path12):
+                    if x.endswith('_gt.nii.gz'):
 
                         labels.append(data_dir + '/' + o + '/' + x)
 

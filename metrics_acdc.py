@@ -40,7 +40,7 @@ import re
 import argparse
 import nibabel as nib
 import pandas as pd
-#from medpy.metric.binary import hd, dc
+from medpy.metric.binary import hd, dc
 import numpy as np
 
 
@@ -251,9 +251,10 @@ def main(path_gt, path_pred):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Script to compute ACDC challenge metrics.")
-    parser.add_argument("GT_IMG", type=str, help="Ground Truth image")
-    parser.add_argument("PRED_IMG", type=str, help="Predicted image")
-    args = parser.parse_args()
-    main(args.GT_IMG, args.PRED_IMG)
+    # parser = argparse.ArgumentParser(
+    #     description="Script to compute ACDC challenge metrics.")
+    # parser.add_argument("GT_IMG", type=str, help="Ground Truth image")
+    # parser.add_argument("PRED_IMG", type=str, help="Predicted image")
+    # args = parser.parse_args()
+    # main(args.GT_IMG, args.PRED_IMG)
+    main('ACDC_results/twolayernetwork/binary_crossentropy/1patients/2layers/0split/1epochs_y_test.npy','ACDC_results/twolayernetwork/binary_crossentropy/1patients/2layers/0split/1epochs_y_pred.npy')

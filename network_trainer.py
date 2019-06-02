@@ -11,6 +11,7 @@ import pandas as pd
 import methods
 import random
 from sklearn.metrics import roc_curve, auc
+from medpy.metric.binary import hd, dc
 import keras
 
 # whichloss = 'binary_crossentropy'
@@ -19,19 +20,22 @@ whichdataset = 'ACDC'
 # whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
-whichlosses = ['binary_crossentropy', 'dice']
-# whichmodel = 'twolayernetwork'
-whichmodels = ['param_unet', 'segnetwork', 'unet']
+# whichlosses = ['binary_crossentropy', 'dice']
+whichlosses = ['binary_crossentropy']
+
+whichmodels = ['twolayernetwork']
+# whichmodels = ['param_unet', 'segnetwork', 'unet']
 
 
 
 seeds = [1, 2, 3]
+# seeds = [1]
+
 data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
+# data_percs = [0.25]
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
-# layers_arr = [5,4,3,2]
 
-# layers_arr = [1]
 epochs = 100
 
 
@@ -87,7 +91,7 @@ unet_labels = []
 for whichloss in whichlosses:
     for whichmodel in whichmodels:
         if whichmodel == 'param_unet':
-            layers_arr = [2, 3, 4, 5, 6]
+            layers_arr = [2, 3, 4, 5]
         else:
             layers_arr = [1]
         for layers in layers_arr:
@@ -119,7 +123,6 @@ for whichloss in whichlosses:
 
                     # conv 2D default parameter: channels last: (batch, rows, cols, channels)
 
-                    validation_split_val = 0.25
                     batch_size = 32
                     input_size = (resolution, resolution, 1)
                     kernel_size = 3
@@ -184,7 +187,7 @@ for whichloss in whichlosses:
                                           optimizer='adam',
                                           metrics=['accuracy'])
 
-                        history = model.fit(x_train, y_train, validation_split=validation_split_val, epochs=epochs, verbose=1, callbacks=[early_stopping])
+                        history = model.fit(x_train, y_train, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
 
 
 
@@ -225,10 +228,7 @@ for whichloss in whichlosses:
                         y_pred.append(model.predict(i, verbose = 1))
 
                     np.save(os.path.join(save_dir, str(epochs) + 'epochs_y_pred'), y_pred)
-
-
-
-
+                    np.save(os.path.join(save_dir, str(epochs) + 'epochs_y_test'), y_test)
 
                     results = {
                         "median_ROC_AUC_": "median_ROC_AUC",
@@ -238,7 +238,6 @@ for whichloss in whichlosses:
                         "dice": "dice",
                         "roc_auc": "roc_auc",
                         "median_dice_score": "median_dice_score",
-                        "validation_split_val": validation_split_val,
                         "unet_layers": layers,
                         "filters": filters,
                         "input_size": input_size,
@@ -246,6 +245,7 @@ for whichloss in whichlosses:
                         "loss": whichloss
                     }
                     dice = []
+                    dice_medpy = []
                     roc_auc = []
                     output = []
 
@@ -253,7 +253,7 @@ for whichloss in whichlosses:
                         output.append(np.squeeze(y_pred[i]))
                         for s in range(y_test[i].shape[0]):
 
-                            dice.append(su.dice(output[i][s], y_test[i][s]))
+                            dice.append(dc(output[i][s], y_test[i][s]))
                             y_true = y_test[i][s].reshape(-1)
                             y_pred_temp = y_pred[i][s].reshape(-1)
                             fpr, tpr, thresholds = roc_curve(y_true, y_pred_temp)
@@ -276,7 +276,6 @@ for whichloss in whichlosses:
 
                     all_results.append(results)
 
-                    torch.save(y_test, os.path.join(save_dir, 'y_test'))
 
 
 

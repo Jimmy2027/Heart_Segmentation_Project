@@ -17,10 +17,10 @@ whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
 whichdataset = 'ACDC'
 # whichdataset = 'York'
-whichmodel = 'param_unet'
+# whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-# whichmodel = 'twolayernetwork'
+whichmodel = 'twolayernetwork'
 # whichmodel = 'segnetwork'
 
 
@@ -28,9 +28,9 @@ seeds = [1, 2, 3]
 data_percs = [1, 0.75, 0.5, 0.25]  # between 0 and 1, not percentages
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
-layers_arr = [2,3,4,5]
+# layers_arr = [2,3,4,5]
 
-# layers_arr = [1]
+layers_arr = [1]
 epochs = 1
 
 
@@ -217,6 +217,7 @@ for layers in layers_arr:
                 y_pred.append(model.predict(i, verbose = 1))
 
             np.save(os.path.join(save_dir, str(epochs) + 'epochs_y_pred'), y_pred)
+            np.save(os.path.join(save_dir, str(epochs) + 'epochs_y_test'), y_test)
 
 
 
@@ -268,7 +269,6 @@ for layers in layers_arr:
 
             all_results.append(results)
 
-            torch.save(y_test, os.path.join(save_dir, 'y_test'))
 
 
 
