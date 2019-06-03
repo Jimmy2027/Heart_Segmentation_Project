@@ -11,17 +11,17 @@ import pandas as pd
 import methods
 import random
 from sklearn.metrics import roc_curve, auc
-from medpy.metric.binary import hd, dc
+from medpy.metric.binary import dc
 import keras
 
 # whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
-whichdataset = 'ACDC'
-# whichdataset = 'York'
+# whichdataset = 'ACDC'
+whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
-# whichlosses = ['binary_crossentropy', 'dice']
-whichlosses = ['binary_crossentropy']
+whichlosses = ['binary_crossentropy', 'dice']
+# whichlosses = ['binary_crossentropy']
 
 whichmodels = ['twolayernetwork']
 # whichmodels = ['param_unet', 'segnetwork', 'unet']
@@ -36,7 +36,7 @@ data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
 
-epochs = 100
+epochs = 1
 
 
 all_results = []
@@ -98,6 +98,9 @@ for whichloss in whichlosses:
 
             for perc_index in range(len(data_percs)):
                 for split_number in range(len(splits)):
+
+                    print('training', whichmodel, 'with', whichloss, 'as loss,', str(layers), 'layers', str(perc_index), 'perc_index and split number:', str(split_number))
+
                     data = data_dict[split_number][str(data_percs[perc_index]) + "Perc"]
 
                     x_train, y_train, x_val, y_val, x_test, y_test = \
@@ -279,11 +282,11 @@ for whichloss in whichlosses:
 
 
 
-                plt.figure()
-                plt.hist(np.unique(y_pred[0]))
-                plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
-                    round(results['median_ROC_AUC'], 4)))
-                plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
+                    plt.figure()
+                    plt.hist(np.unique(y_pred[0]))
+                    plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
+                        round(results['median_ROC_AUC'], 4)))
+                    plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
 
 best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
 print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],

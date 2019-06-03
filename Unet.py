@@ -9,9 +9,8 @@ from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as keras
 import torch
-
-
 import keras.backend as K
+
 
 def dice_coef(y_true, y_pred, smooth=1):
     """

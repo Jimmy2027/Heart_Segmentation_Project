@@ -1,8 +1,8 @@
 """
 TODO:
-
     - create own callback to plot images : https://keras.io/callbacks/
     - tensorboard
+    - try tresholded dice score
 
 """
 import numpy as np
@@ -27,7 +27,6 @@ myocar_labels = methods.remove_other_segmentations(labels_paths)  # array with a
 img_data = methods.load_data(images_paths)  # array with all the heart images in slices
 all_labels = methods.load_data(labels_paths)
 methods.save_datavisualisation2(img_data, all_labels, 'ACDC/untouched_data/', False, False)
-
 
 
 
@@ -76,7 +75,7 @@ np.save('unet_labels', cropped_myocar_labels)
 
 
 
-# methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'ACDC/network_input/', index_first=True, normalized=True)
+methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'ACDC/network_input/', index_first=True, normalized=True)
 
 
 

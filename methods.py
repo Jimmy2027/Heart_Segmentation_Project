@@ -16,8 +16,8 @@ from sklearn import model_selection
 
 def get_split(images, masks, split, seed):
     # split in form of (0.2,0.2)
-    test_amount = int(images.shape[0]*split[0])
-    val_amount = int(images.shape[0]*split[1])
+    test_amount = max(int(images.shape[0]*split[0]), 1)
+    val_amount = max(int(images.shape[0]*split[1]), 1)
     train_amount = images.shape[0] - test_amount - val_amount
     print("******************************************")
     print("TRAINING DATA: " + str(train_amount) + " patients")
@@ -115,11 +115,22 @@ def remove_other_segmentations(labels):
 
     """
     myocar_data = []
-    for i in labels:
-        img = nib.load(i)
-        img_data = img.get_data()
-        img_data[img_data != 2] = 0
-        myocar_data.append(img_data)
+    for p, i in enumerate(labels):
+
+        if p % 2 != 0:
+            img = nib.load(i)
+            img_data = img.get_data()
+            img_data[img_data != 2] = 0
+            temp.append(img_data)
+            temp = np.concatenate(temp, axis = 2)
+            myocar_data.append(temp)
+        else :
+            temp = []
+            img = nib.load(i)
+            img_data = img.get_data()
+            img_data[img_data != 2] = 0
+            temp.append(img_data)
+
     return myocar_data
 
 
@@ -132,17 +143,13 @@ def load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, labe
     im_data = []
     labels = []
     for o in os.listdir(data_dir): # o: patientxxx
-        # print('o: ', o)
         if not o.startswith('.') and os.path.isdir(os.path.join(data_dir, o)):
 
             for x in os.listdir(os.path.join(data_dir, o)): # x: patientXXX_frameXX.nii.gz
 
                 if not x.startswith('.'):
-                    # print('x: ' , data_dir + '/' + x)
-                    # print('path: ','/' os.path.join(data_dir, o) + raw_image_path01)
-                    # print(data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path01) or (
-                    #         data_dir + '/' + x == os.path.join(data_dir, o) + raw_image_path12)
                     if (not(x.endswith('_gt.nii.gz')) and x.endswith('nii.gz') and not(x.endswith('4d.nii.gz'))):
+
                         im_data.append(data_dir + '/' + o + '/' + x)
 
                     if x.endswith('_gt.nii.gz'):
@@ -153,12 +160,23 @@ def load_images(data_dir, raw_image_path01, raw_image_path12, label_path01, labe
 
 def load_data(data_paths):
     data = []
-    for i in data_paths:
-        img = nib.load(i)
-        img_data = img.get_data()
-        data.append(img_data)
+
+    for p, i in enumerate(data_paths):
+        if p % 2 !=0:
+            img = nib.load(i)
+            img_data = img.get_data()
+            temp.append(img_data)
+            temp = np.concatenate(temp, axis=2)
+            data.append(temp)
+        else:
+            temp = []
+            img = nib.load(i)
+            img_data = img.get_data()
+            temp.append(img_data)
+
 
     return data
+
 
 
 def display(img_data, block = True):

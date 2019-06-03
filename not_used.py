@@ -48,7 +48,7 @@ def save_datavisualisation3(img_data, myocar_labels, predicted_labels, save_fold
     # print(image.shape)
     imageio.imwrite(save_folder + '%d.png' % (counter,), image)
 
-def find_middle(img_data):  #TODO here I am taking the middle of the image, what I want is to have the middle of the segmentation though
+def find_middle(img_data):
     """
 
     :param img_data: single image data
