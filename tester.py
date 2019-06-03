@@ -9,7 +9,7 @@ import glob
 import scoring_utils as su
 
 
-basepath = 'ACDC_results/'
+basepath = 'York_results1/'
 endfolder = False
 modalites = os.listdir(basepath)
 
@@ -28,19 +28,42 @@ def compute_dice_score(model, lossfunction, patients, layers, split):
         os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split')):
         if folder.endswith('y_pred.npy'):
             y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', folder))
-            y_test = torch.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', 'y_test'))
+        if folder.endswith('y_test.npy'):
+            y_test = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', folder))
 
     dice = []
     output = []
-
+    dice_threshold = []
+    threshold = 0.5
     for i in range(len(y_test)):
         output.append(np.squeeze(y_pred[i]))
         for s in range(y_test[i].shape[0]):
             dice.append(dc(output[i][s], y_test[i][s]))
+            dice_threshold.append(dc(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
 
     median_dice_score = np.median(dice)
+    median_thrdice_score = np.median(dice_threshold)
 
-    return median_dice_score
+    plt.figure()
+    plt.hist(np.unique(y_pred[0]))
+    plt.title('mds: ' + str(round(median_dice_score, 4)))
+    plt.show()
+
+    plt.figure()
+    plt.plot(y_pred[0][:,:,0])
+    plt.show()
+
+    plt.figure()
+    plt.plot(np.where(y_pred[0][:,:,0] > threshold, 1, 0))
+    plt.show()
+
+    plt.figure()
+    plt.hist(np.unique(np.where(y_pred[0] > threshold, 1, 0)))
+    plt.title('med thr dice ' + str(
+        round(median_thrdice_score, 4)))
+    plt.show()
+
+    return median_dice_score, median_thrdice_score
 
 def print_best_scores():
     results = []
@@ -95,7 +118,7 @@ def print_best_scores():
 
 
 
-# median_dice_score = compute_dice_score('twolayernetwork', 'binary_crossentropy', 1, 2, 0)
+# median_dice_score, median_thrdice_score = compute_dice_score('param_unet', 'binary_crossentropy', 1, 3, 0)
 print_best_scores()
 # results, y_pred = read_dice_score('twolayernetwork', 'binary_crossentropy', 0.25, 1, 0)
 something = 0
