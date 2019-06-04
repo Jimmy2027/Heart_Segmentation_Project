@@ -7,9 +7,10 @@ import os
 import glob
 import scoring_utils as su
 from textwrap import wrap
+import matplotlib.cm as cm
 
 
-basepath = 'York_results1/'
+basepath = 'ACDC_results/'
 endfolder = False
 modalites = os.listdir(basepath)
 
@@ -148,13 +149,17 @@ def plot_dice_vs_datapercs_vs_model():
 
     dices = [dices_param_unet_2, dices_param_unet_3, dices_param_unet_4, dices_param_unet_5]
     datapercs = [datapercs_param_unet_2, datapercs_param_unet_3, datapercs_param_unet_4, datapercs_param_unet_5]
+    colors = cm.rainbow(np.linspace(0, 1, len(dices)))
+
+    plt.figure()  # colors for different networksd
+
     for i in range(len(dices)):
-        plt.figure()                        #colors for different networksd
         plt.xlabel('Data percentages')
         plt.ylabel('Dice scores')
-        plt.scatter(datapercs[i], dices[i])
-        plt.title('For param_unet'+str(i+1))
-        plt.show()
+        plt.scatter(datapercs[i], dices[i],c = colors[i], s = 50, label = 'param_unet' + str(i+1))
+    plt.legend(loc = (0.6,0.7))
+    plt.title('Dice scores of different networks against the data percentages')
+    plt.show()
 
 def plot_dice_vs_datapercs(whichmodel, whichloss):           #TODO do this for each loss function and each network?
     basepaths = ['ACDC_results/', 'York_results1/']
@@ -194,7 +199,7 @@ def plot_dice_vs_datapercs(whichmodel, whichloss):           #TODO do this for e
                 ACDC_std_dices = [std_dice025,std_dice05,std_dice075,std_dice1]
             if basepath == basepaths[1]:
                 York_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
-                York_std_dices = [std_dice025,std_dice05,std_dice075,std_dice1]
+                York_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
 
 
     ind = np.arange(len(ACDC_med_dices))  # the x locations for the groups
@@ -250,6 +255,6 @@ def plot_dice_vs_datapercs(whichmodel, whichloss):           #TODO do this for e
 # median_dice_score, median_thrdice_score = compute_dice_score('param_unet', 'binary_crossentropy', 0.5, 4, 2)
 # print_best_scores()
 # results, y_pred = read_dice_score('twolayernetwork', 'binary_crossentropy', 0.25, 1, 0)
-plot_dice_vs_datapercs_vs_model()
-# plot_dice_vs_datapercs('param_unet', 'binary_crossentropy')
+# plot_dice_vs_datapercs_vs_model()
+plot_dice_vs_datapercs('param_unet', 'binary_crossentropy')
 something = 0

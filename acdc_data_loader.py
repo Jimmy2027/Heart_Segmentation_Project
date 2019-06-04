@@ -2,7 +2,9 @@
 TODO:
     - create own callback to plot images : https://keras.io/callbacks/
     - tensorboard
-    - try tresholded dice score
+    - thresholded dice score
+    - hausdorf distance
+    - visualize splits
 
 """
 import numpy as np

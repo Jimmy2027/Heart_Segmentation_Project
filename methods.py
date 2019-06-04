@@ -405,7 +405,60 @@ def save_datavisualisation3(img_data, myocar_labels, predicted_labels,median_dic
         counter = counter + 1
 
 
+def save_datavisualisation3(img_data, myocar_labels, predicted_labels, thresholded_labels, median_dice_score, save_folder, index_first = False, normalized = False):
+    img_data_temp = []
+    myocar_labels_temp = []
+    predicted_labels_temp = []
+    thresholded_labels_temp=[]
+    if index_first == True:
+        for i in range(0, len(img_data)):
+            img_data_temp.append(np.moveaxis(img_data[i], 0, -1))
+            myocar_labels_temp.append(np.moveaxis(myocar_labels[i], 0, -1))
+            predicted_labels_temp.append(np.moveaxis(predicted_labels[i], 0, -1))
+            thresholded_labels_temp.append(np.moveaxis(thresholded_labels[i], 0, -1))
 
+    counter = 0
+    for i, j, k, l in zip(img_data_temp[:], myocar_labels_temp[:], predicted_labels_temp[:], thresholded_labels_temp[:]):
+        print(counter)
+        print(i.shape)
+        i_patch = i[:, :, 0]
+        if normalized == True:
+            i_patch = i_patch*255
+
+        j_patch = j[:, :, 0]
+        j_patch = j_patch * 255
+
+        k_patch = k[:,:,0]
+        k_patch = k_patch*255
+
+        l_patch = l[:,:,0]
+        l_patch = l_patch*255
+
+        for slice in range(1, i.shape[2]):
+            temp = i[:, :, slice]
+            # np.squeeze(temp)
+            if normalized == True:
+                temp = temp * 255
+            i_patch = np.hstack((i_patch, temp))
+
+
+            temp = j[:, :, slice]
+            temp = temp * 255
+            j_patch = np.hstack((j_patch, temp))
+
+            temp = k[:,:,slice]
+            temp = temp*255
+            k_patch = np.hstack((k_patch, temp))
+
+            temp = l[:,:,slice]
+            temp=temp*255
+            l_patch = np.hstack((l_patch, temp))
+
+        image = np.vstack((i_patch, j_patch, k_patch, l_patch))
+
+        print(image.shape)
+        imageio.imwrite(save_folder + median_dice_score + 'mds' + '%d.png' % (counter,), image)
+        counter = counter + 1
 
 
 def recreate(img_data, data):

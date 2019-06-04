@@ -11,18 +11,18 @@ import pandas as pd
 import methods
 import random
 from sklearn.metrics import roc_curve, auc
-from medpy.metric.binary import dc
+from medpy.metric.binary import dc, hd
 import keras
 
 whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
-# whichdataset = 'ACDC'
-whichdataset = 'York'
+whichdataset = 'ACDC'
+# whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-# whichmodels = ['twolayernetwork']
-whichmodels = ['param_unet', 'segnetwork', 'unet']
+# whichmodels = ['param_unet']
+whichmodels = ['param_unet', 'segnetwork']
 
 
 
@@ -35,7 +35,7 @@ filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
 
 epochs = 100
-
+threshold = 0.5
 
 all_results = []
 
@@ -86,6 +86,23 @@ for seed in seeds:
 unet_input = []
 unet_labels = []
 
+"""
+With this piece of code one can save the splits as images to visualize them
+"""
+# for perc_index in range(len(data_percs)):
+#     for split_number in range(len(splits)):
+#
+#         data = data_dict[split_number][str(data_percs[perc_index]) + "Perc"]
+#
+#         x_train, y_train, x_val, y_val, x_test, y_test = \
+#             methods.get_datasets(data, split_number)
+#
+#         methods.save_datavisualisation2(x_train, y_train, 'York/training_data/split' + str(split_number )+ '/', True, True)
+#         methods.save_datavisualisation2(x_test, y_test, 'York/test_data/split' + str(split_number) + '/', True, True)
+#         methods.save_datavisualisation2(x_val, y_val, 'York/validation_data/split' + str(split_number) + '/', True, True)
+
+
+
 for whichmodel in whichmodels:
     if whichmodel == 'param_unet':
         layers_arr = [2, 3, 4, 5]
@@ -103,8 +120,6 @@ for whichmodel in whichmodels:
 
                 x_train, y_train, x_val, y_val, x_test, y_test = \
                     methods.get_datasets(data, split_number)
-
-
 
                 x_train = np.concatenate(x_train, axis = 0)
                 y_train = np.concatenate(y_train, axis = 0)
@@ -237,6 +252,7 @@ for whichmodel in whichmodels:
                     "number_of_patients" : data_percs[perc_index],
                     "model" : whichmodel,
                     "epochs": epochs,
+                    "threshold": threshold,
                     "dice": "dice",
                     "roc_auc": "roc_auc",
                     "median_dice_score": "median_dice_score",
@@ -244,28 +260,42 @@ for whichmodel in whichmodels:
                     "filters": filters,
                     "input_size": input_size,
                     "which_split": split_number,
-                    "loss": whichloss
+                    "loss": whichloss,
+                    "nonthr_hausdorff": "nonthr_hausdorff",
+                    "median_nonthr_hausdorff": "median_nonthr_hausdorff",
+                    "thresholded_hausdorff": "thresholded_hausdorff",
+                    "median_thresholded_hausdorff": "median_thresholded_hausdorff"
+
                 }
                 dice = []
                 dice_thresholded = []
                 roc_auc = []
+                nonthr_hausdorff = []
+                thresholded_hausdorff = []
+                thresholded_y_pred = []
                 output = []
-                threshold = 0.5
 
+                thresholded_output = []
                 for i in range(len(y_test)):
+                    thresholded_y_pred.append(np.where(y_pred[i] > threshold, 1, 0))
+                for i in range(len(y_test)):
+                    thresholded_output.append(np.squeeze(thresholded_y_pred[i]))
                     output.append(np.squeeze(y_pred[i]))
                     for s in range(y_test[i].shape[0]):
-
                         dice.append(dc(output[i][s], y_test[i][s]))
-                        dice_thresholded.append(dc(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
+                        dice_thresholded.append(dc(thresholded_output[i][s], y_test[i][s]))
+                        nonthr_hausdorff.append(hd(output[i][s], y_test[i][s]))
+                        thresholded_hausdorff.append(hd(thresholded_output[i][s], y_test[i][s]))
                         y_true = y_test[i][s].reshape(-1)
-                        y_pred_temp = y_pred[i][s].reshape(-1)
+                        y_pred_temp = thresholded_y_pred[i][s].reshape(-1)
                         fpr, tpr, thresholds = roc_curve(y_true, y_pred_temp)
                         roc_auc.append(auc(fpr, tpr))
 
                 median_ROC_AUC = np.median(roc_auc)
                 median_dice_score = np.median(dice)
                 median_thresholded_dice = np.median(dice_thresholded)
+                median_nonthr_hausdorff = np.median(nonthr_hausdorff)
+                median_thresholded_hausdorff = np.mean(thresholded_hausdorff)
 
                 results["median_dice_score"] = median_dice_score
                 results["median_thresholded_dice"] = median_thresholded_dice
@@ -273,12 +303,15 @@ for whichmodel in whichmodels:
                 results["dice"] = dice
                 results["roc_auc"] = roc_auc
                 results["epochs"] = epochs
+                results['median_nonthr_hausdorff'] = median_nonthr_hausdorff
+                results['median_thresholded_hausdorff'] = median_thresholded_hausdorff
                 torch.save(results, os.path.join(save_dir, str(epochs) + 'epochs_evaluation_results'))
 
-                print('DICE SCORE: ' + str(median_dice_score))
+                print('DICE SCORE: ' + str(median_thresholded_dice))
                 print('ROC AUC:', str(median_ROC_AUC))
+                print('HAUSDORFF DISTANCE', str(median_thresholded_hausdorff))
 
-                methods.save_datavisualisation3(x_test, y_test, output, str(round(median_dice_score, 4)), save_dir+'/', True, True)
+                methods.save_datavisualisation3(x_test, y_test, output, thresholded_output, str(round(median_thresholded_dice, 4)), save_dir+'/', True, True)
 
                 all_results.append(results)
 
@@ -287,11 +320,16 @@ for whichmodel in whichmodels:
 
                 plt.figure()
                 plt.hist(np.unique(y_pred[0]))
-                plt.title('mds: ' + str(round(results['median_dice_score'], 4)) + '   ' + 'roc_auc: ' + str(
-                    round(results['median_ROC_AUC'], 4)))
+                plt.title('mds: ' + str(round(results['median_thresholded_dice'], 4)) + '   ' + 'Hausdorff distance: ' + str(
+                    round(results['median_thresholded_hausdorff'], 4)))
                 plt.savefig(os.path.join(save_dir, str(epochs) + 'epochs_hist.png'))
 
 best_idx = np.argmax([dict["median_dice_score"] for dict in all_results])
 print(' BEST MEDIAN DICE SCORE:', all_results[best_idx]["median_dice_score"], 'with', all_results[best_idx]["number_of_patients"],
+          'number of patients,', 'epochs = ',
+          all_results[best_idx]["epochs"])
+
+best_idx = np.argmax([dict["median_thresholded_dice"] for dict in all_results])
+print(' BEST thresholded MEDIAN DICE SCORE:', all_results[best_idx]["median_thresholded_dice"], 'with', all_results[best_idx]["number_of_patients"],
           'number of patients,', 'epochs = ',
           all_results[best_idx]["epochs"])
