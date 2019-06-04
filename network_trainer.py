@@ -16,8 +16,8 @@ import keras
 
 whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
-whichdataset = 'ACDC'
-# whichdataset = 'York'
+# whichdataset = 'ACDC'
+whichdataset = 'York'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
@@ -45,11 +45,11 @@ if whichdataset == 'York':
     input = np.load('YCMRI_128x128_images.npy', allow_pickle=True)
     labels = np.load('YCMRI_128x128_labels.npy', allow_pickle=True)
     path = 'York_results'
-    plt.figure()
-    for i in range(len(labels)):
-        plt.hist(np.unique(labels[i][:]))
-
-    plt.show()
+    # plt.figure()
+    # for i in range(len(labels)):
+    #     plt.hist(np.unique(labels[i][:]))
+    #
+    # plt.show()
 
 
 if whichdataset == 'ACDC':
@@ -95,8 +95,9 @@ for whichmodel in whichmodels:
 
         for perc_index in range(len(data_percs)):
             for split_number in range(len(splits)):
-
-                print('training', whichmodel, 'with', whichloss, 'as loss,', str(layers), 'layers', str(perc_index), 'perc_index and split number:', str(split_number))
+                print("******************************************")
+                print('training', whichmodel, 'on', whichdataset,'with', whichloss, 'as loss,', str(layers), 'layers', str(data_percs[perc_index]), 'perc_index and split number:', str(split_number))
+                print("******************************************")
 
                 data = data_dict[split_number][str(data_percs[perc_index]) + "Perc"]
 

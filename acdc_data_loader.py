@@ -25,8 +25,8 @@ labels_paths.sort()
 
 myocar_labels = methods.remove_other_segmentations(labels_paths)  # array with all the myocar labels
 img_data = methods.load_data(images_paths)  # array with all the heart images in slices
-all_labels = methods.load_data(labels_paths)
-methods.save_datavisualisation2(img_data, all_labels, 'ACDC/untouched_data/', False, False)
+# all_labels = methods.load_data(labels_paths)
+# methods.save_datavisualisation2(img_data, all_labels, 'ACDC/untouched_data/', False, False)
 
 
 
@@ -65,8 +65,6 @@ unet_input = methods.data_normalization(cropped_img_data)
 number_of_images = len(unet_input)
 
 
-
-
 np.save('unet_input', unet_input)
 np.save('unet_labels', cropped_myocar_labels)
 
@@ -75,7 +73,8 @@ np.save('unet_labels', cropped_myocar_labels)
 
 
 
-methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'ACDC/network_input/', index_first=True, normalized=True)
+
+# methods.save_datavisualisation2(unet_input, cropped_myocar_labels, 'ACDC/network_input/', index_first=True, normalized=True)
 
 
 
