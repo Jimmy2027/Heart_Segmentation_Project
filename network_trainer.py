@@ -13,6 +13,7 @@ import random
 from sklearn.metrics import roc_curve, auc
 from medpy.metric.binary import dc, hd
 import keras
+import keras.preprocessing as kp
 
 whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
@@ -21,7 +22,7 @@ whichdataset = 'ACDC'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-whichmodels = ['param_unet']
+whichmodels = ['twolayernetwork']
 # whichmodels = ['param_unet', 'segnetwork']
 
 
@@ -141,7 +142,6 @@ for whichmodel in whichmodels:
 
                 # conv 2D default parameter: channels last: (batch, rows, cols, channels)
 
-                batch_size = 32
                 input_size = (resolution, resolution, 1)
                 kernel_size = 3
                 Dropout_rate = 0.5
@@ -183,15 +183,25 @@ for whichmodel in whichmodels:
 
                 save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients/' + str(layers) + 'layers/' + str(split_number) + 'split'
 
+                datagen = kp.image.ImageDataGenerator(
+                    featurewise_center=True,
+                    featurewise_std_normalization=True,
+                    rotation_range=20,
+                    width_shift_range=0.2,
+                    height_shift_range=0.2,
+                    horizontal_flip=True)
+                # compute quantities required for featurewise normalization
+                # (std, mean, and principal components if ZCA whitening is applied)
+                datagen.fit(x_train)
 
                 if whichmodel == 'param_unet' or whichmodel == 'unet':
 
-                    model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=2000)
+                    model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=100)
                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                                   baseline=None, restore_best_weights=False)
 
 
-                    history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val,y_val))
+                    history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val,y_val))
                 else:
                     model.summary()
                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
@@ -205,7 +215,7 @@ for whichmodel in whichmodels:
                                       optimizer='adam',
                                       metrics=['accuracy'])
 
-                    history = model.fit(x_train, y_train, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
+                    history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
 
 
 

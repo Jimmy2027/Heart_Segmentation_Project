@@ -9,7 +9,6 @@ import scoring_utils as su
 from textwrap import wrap
 import matplotlib.cm as cm
 
-
 basepath = 'York_results/'
 endfolder = False
 modalites = os.listdir(basepath)
@@ -87,18 +86,19 @@ def find_results(path, results):
 
 
 
-def print_best_scores():
+def print_best_scores(whitchdataset):
+    basepath = whitchdataset + '_results/'
     results = []
 
     results = find_results(basepath, results)
-    best_dice_idx = np.argmax([dict["median_dice_score"] for dict in results])
+    best_dice_idx = np.argmax([dict["median_thresholded_dice"] for dict in results])
     best_roc_idx = np.argmax([dict["median_ROC_AUC"] for dict in results])
 
 
 
 
 
-    print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_dice_score"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , ', epochs =', results[best_dice_idx]["epochs"], ', model =', results[best_dice_idx]['model'], 'and split nr. ', results[best_dice_idx]['which_split'])
+    print(' BEST MEDIAN DICE SCORE:', results[best_dice_idx]["median_thresholded_dice"], 'with', results[best_dice_idx]["number_of_patients"], 'number of patients, layers = ',results[best_dice_idx]['unet_layers'] , ', epochs =', results[best_dice_idx]["epochs"], ', model =', results[best_dice_idx]['model'], 'and split nr. ', results[best_dice_idx]['which_split'], 'using',results[best_dice_idx]['loss'], 'as loss' )
     print(' BEST MEDIAN ROC AUC:', results[best_roc_idx]["median_dice_score"], 'with', results[best_roc_idx]["number_of_patients"], 'number of patients, layers = ',results[best_roc_idx]['unet_layers'] , ', epochs =', results[best_roc_idx]["epochs"], ', model =', results[best_roc_idx]['model'],'and split nr. ', results[best_roc_idx]['which_split'])
 
 
@@ -287,16 +287,12 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
             if dict["loss"] == loss:
                 if dict["model"] == whichmodel and dict['unet_layers'] == layers:
                     if dict["number_of_patients"] == datapercs[0]:
-                        print('0.25')
                         dices025.append(dict["median_thresholded_dice"])
                     if dict["number_of_patients"] == datapercs[1]:
-                        print('0.5')
                         dices05.append(dict["median_thresholded_dice"])
                     if dict["number_of_patients"] == datapercs[2]:
-                        print('0.75')
                         dices075.append(dict["median_thresholded_dice"])
                     if dict["number_of_patients"] == datapercs[3]:
-                        print('1')
                         dices1.append(dict["median_thresholded_dice"])
 
             rounding_num = 2
@@ -322,7 +318,7 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
 
     fig, ax = plt.subplots()
     rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
-                    label='binary_crossentropy')
+                    label='binary_cross')
     rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
                     label='Dice')
 
@@ -332,7 +328,7 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
     ax.set_title('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layers))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
-    ax.legend()
+    ax.legend(loc = 2)
 
     def autolabel(rects, xpos='center'):
         """
@@ -363,19 +359,21 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
     plt.savefig(basepath+ whichmodel + str(layers))
-    # plt.show()
+    plt.show()
+
+def save_plts():
+    datasets = ['York', 'ACDC']
+    networks = ['param_unet', 'segnetwork']
+    for dataset in datasets:
+        for network in networks:
+            if network == 'param_unet':
+                layers = [2,3,4,5]
+            else: layers = [1]
+            for layer in layers:
+                plot_thrdice_vs_datapercs_vs_model(dataset, network, layer)
 
 
-
-# plot_thrdice_vs_datapercs('dice', 'York')
-datasets = ['York', 'ACDC']
-networks = ['param_unet', 'segnetwork']
-for dataset in datasets:
-    for network in networks:
-        if network == 'param_unet':
-            layers = [2,3,4,5]
-        else: layers = [1]
-        for layer in layers:
-            plot_thrdice_vs_datapercs_vs_model(dataset, network, layer)
+if __name__ == '__main__':
+    save_plts()
 
 something = 0
