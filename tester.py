@@ -270,10 +270,11 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     fig.subplots_adjust(top=0.8)
     plt.show()
 
-def plot_thrdice_vs_datapercs_vs_model(whichmodel, whichloss):
-    basepaths = ['ACDC_results_gpu/', 'York_results/']
+def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
+    basepath = whichdataset +'_results/'
+    losses = ['binary_crossentropy', 'dice']
     datapercs = [0.25, 0.5, 0.75, 1]
-    for basepath in basepaths:
+    for loss in losses:
         results = []
         results = find_results(basepath, results)
         dices025 = []
@@ -283,47 +284,52 @@ def plot_thrdice_vs_datapercs_vs_model(whichmodel, whichloss):
 
 
         for dict in results:
-            if dict["loss"] == whichloss:
-                if dict["model"] == whichmodel :
+            if dict["loss"] == loss:
+                if dict["model"] == whichmodel and dict['unet_layers'] == layers:
                     if dict["number_of_patients"] == datapercs[0]:
+                        print('0.25')
                         dices025.append(dict["median_thresholded_dice"])
                     if dict["number_of_patients"] == datapercs[1]:
+                        print('0.5')
                         dices05.append(dict["median_thresholded_dice"])
                     if dict["number_of_patients"] == datapercs[2]:
+                        print('0.75')
                         dices075.append(dict["median_thresholded_dice"])
-
                     if dict["number_of_patients"] == datapercs[3]:
+                        print('1')
                         dices1.append(dict["median_thresholded_dice"])
 
-            med_dice025 = round(np.median(dices025),4)
-            std_dice025 = round(np.std(dices025),4)
-            med_dice05 = round(np.median(dices05),4)
-            std_dice05 = round(np.std(dices05),4)
-            med_dice075 = round(np.mean(dices075),4)
-            std_dice075 = round(np.std(dices075),4)
-            med_dice1 = round(np.mean(dices1),4)
-            std_dice1 = round(np.std(dices1),4)
-            if basepath == basepaths[0]:
-                ACDC_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
-                ACDC_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
-            if basepath == basepaths[1]:
-                York_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
-                York_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+            rounding_num = 2
+            med_dice025 = round(np.median(dices025),rounding_num)
+            std_dice025 = round(np.std(dices025),rounding_num)
+            med_dice05 = round(np.median(dices05),rounding_num)
+            std_dice05 = round(np.std(dices05),rounding_num)
+            med_dice075 = round(np.mean(dices075),rounding_num)
+            std_dice075 = round(np.std(dices075),rounding_num)
+            med_dice1 = round(np.mean(dices1),rounding_num)
+            std_dice1 = round(np.std(dices1),rounding_num)
+
+            if loss == losses[0]:
+                bincross_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+                bincross_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+            if loss == losses[1]:
+                dice_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+                dice_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
 
 
-    ind = np.arange(len(ACDC_med_dices))  # the x locations for the groups
+    ind = np.arange(len(bincross_med_dices))  # the x locations for the groups
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(ind - width / 2, ACDC_med_dices, width, yerr=ACDC_std_dices,
+    rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
                     label='ACDC')
-    rects2 = ax.bar(ind + width / 2, York_med_dices, width, yerr=York_std_dices,
+    rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
                     label='York')
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores by dataset against percentage of patients for binary_crossentropy')
+    ax.set_title('Dice scores by dataset against percentage of patients')
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
     ax.legend()
@@ -351,7 +357,7 @@ def plot_thrdice_vs_datapercs_vs_model(whichmodel, whichloss):
     autolabel(rects2, "right")
 
     fig.tight_layout()
-    title = ax.set_title("\n".join(wrap("Dice scores by dataset against percentage of patients for " + whichmodel + ' and ' + whichloss + ' as loss function ' , 60)))
+    title = ax.set_title("\n".join(wrap("Dice scores by dataset against percentage of patients for " + whichmodel, 60)))
 
     fig.tight_layout()
     title.set_y(1.05)
@@ -359,11 +365,7 @@ def plot_thrdice_vs_datapercs_vs_model(whichmodel, whichloss):
     plt.show()
 
 
-# median_dice_score, median_thrdice_score = compute_dice_score('param_unet', 'binary_crossentropy', 0.5, 4, 2)
-# print_best_scores()
-# results, y_pred = read_dice_score('twolayernetwork', 'binary_crossentropy', 0.25, 1, 0)
-# scatterplot_thrdice_vs_datapercs_vs_model('binary_crossentropy')
-# plot_thrdice_vs_datapercs('param_unet', 'binary_crossentropy', 'York', 3)
-plot_thrdice_vs_datapercs('dice', 'York')
-# plot_thrdice_vs_datapercs_vs_model('param_unet','binary_crossentropy')
+
+# plot_thrdice_vs_datapercs('dice', 'York')
+plot_thrdice_vs_datapercs_vs_model('York', 'segnet', 1)
 something = 0
