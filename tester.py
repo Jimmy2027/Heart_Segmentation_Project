@@ -322,14 +322,14 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
 
     fig, ax = plt.subplots()
     rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
-                    label='ACDC')
+                    label='binary_crossentropy')
     rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
-                    label='York')
+                    label='Dice')
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores by dataset against percentage of patients')
+    ax.set_title('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layers))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
     ax.legend()
@@ -357,15 +357,25 @@ def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
     autolabel(rects2, "right")
 
     fig.tight_layout()
-    title = ax.set_title("\n".join(wrap("Dice scores by dataset against percentage of patients for " + whichmodel, 60)))
+    title = ax.set_title("\n".join(wrap('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layers), 60)))
 
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.show()
+    plt.savefig(basepath+ whichmodel + str(layers))
+    # plt.show()
 
 
 
 # plot_thrdice_vs_datapercs('dice', 'York')
-plot_thrdice_vs_datapercs_vs_model('York', 'segnet', 1)
+datasets = ['York', 'ACDC']
+networks = ['param_unet', 'segnetwork']
+for dataset in datasets:
+    for network in networks:
+        if network == 'param_unet':
+            layers = [2,3,4,5]
+        else: layers = [1]
+        for layer in layers:
+            plot_thrdice_vs_datapercs_vs_model(dataset, network, layer)
+
 something = 0
