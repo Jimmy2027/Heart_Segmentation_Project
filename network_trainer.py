@@ -27,11 +27,11 @@ whichmodels = ['twolayernetwork']
 
 
 
-seeds = [1, 2, 3]
+seeds = [1, 2, 3] # for reproducibility
 # seeds = [1]
 
 # data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
-data_percs = [0.25]
+data_percs = [1]
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
 
@@ -82,7 +82,7 @@ if whichdataset == 'ACDC':
 
 data_dict = []
 for seed in seeds:
-    data_dict.append(methods.getalldata(input, labels, data_percs, splits, seed))
+    data_dict.append(methods.getalldata(input, labels, data_percs, splits, seed))  # data_dict contains 3 times 3 splits
 
 unet_input = []
 unet_labels = []
