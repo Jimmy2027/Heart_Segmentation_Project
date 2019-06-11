@@ -15,6 +15,7 @@ from medpy.metric.binary import dc, hd
 import keras
 import keras.preprocessing as kp
 
+
 whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
 whichdataset = 'ACDC'
@@ -27,14 +28,15 @@ whichmodels = ['twolayernetwork']
 
 
 
-seeds = [1, 2, 3] # for reproducibility
+seeds = [1] # for reproducibility
 # seeds = [1]
 
 # data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
-data_percs = [1]
+data_percs = [0.25]
+slice_perc = 0.25
 filters = 64
-splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
-
+# splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
+splits = {1: (0.3,0.1)}
 epochs = 1
 threshold = 0.5
 
@@ -51,6 +53,7 @@ if whichdataset == 'York':
     #     plt.hist(np.unique(labels[i][:]))
     #
     # plt.show()
+    input, labels = methods.slice_perc(input, labels, slice_perc)
 
 
 if whichdataset == 'ACDC':
@@ -79,11 +82,19 @@ if whichdataset == 'ACDC':
     #     plt.hist(np.unique(labels[i][:]))
     #
     # plt.show()
+    old_input = input
+    old_labels = labels
+    input, labels = methods.slice_perc(input, labels, slice_perc)
 
 data_dict = []
+
 for seed in seeds:
     data_dict.append(methods.getalldata(input, labels, data_percs, splits, seed))  # data_dict contains 3 times 3 splits
 
+# total_numslices = np.concatenate(input[:]).shape[0]
+# num_trainslices = np.concatenate(data_dict[0]['1Perc']['Split#0']['train_images'][:]).shape[0]
+# num_valslices = np.concatenate(data_dict[0]['1Perc']['Split#0']['val_images'][:]).shape[0]
+# num_testslices = np.concatenate(data_dict[0]['1Perc']['Split#0']['test_images'][:]).shape[0]
 unet_input = []
 unet_labels = []
 
@@ -296,8 +307,10 @@ for whichmodel in whichmodels:
                     for s in range(y_test[i].shape[0]):
                         dice.append(dc(output[i][s], y_test[i][s]))
                         dice_thresholded.append(dc(thresholded_output[i][s], y_test[i][s]))
-                        nonthr_hausdorff.append(hd(output[i][s], y_test[i][s]))
-                        #thresholded_hausdorff.append(hd(thresholded_output[i][s], y_test[i][s])) #causes an error if thresholded is 0
+                        if np.max(output[i][s]) != 0:
+                            nonthr_hausdorff.append(hd(output[i][s], y_test[i][s]))
+                        if np.max(thresholded_output[i][s]) != 0:
+                            thresholded_hausdorff.append(hd(thresholded_output[i][s], y_test[i][s])) #causes an error if thresholded is 0
                         y_true = y_test[i][s].reshape(-1)
                         y_pred_temp = thresholded_y_pred[i][s].reshape(-1)
                         fpr, tpr, thresholds = roc_curve(y_true, y_pred_temp)

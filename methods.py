@@ -14,6 +14,23 @@ import imageio
 import random
 from sklearn import model_selection
 
+
+def slice_perc(images, labels, slice_perc):
+    reduced_images = []
+    reduced_labels = []
+    for p in range(len(images)):
+        random.shuffle(images[p])
+        random.shuffle(labels[p])
+        print('Before:',images[p].shape)
+
+        num_slices = int(slice_perc * images[p].shape[0])
+        reduced_images.append(images[p][:num_slices,:,:])
+        reduced_labels.append(labels[p][:num_slices,:,:])
+        print('after: ',images[p][:num_slices,:,:].shape)
+        assert images[p][:num_slices,:,:].shape == labels[p][:num_slices,:,:].shape
+    return np.array(reduced_images), np.array(reduced_labels)
+
+
 def get_split(images, masks, split, seed):
     # split in form of (0.2,0.2)
     test_amount = max(int(images.shape[0]*split[0]), 1)
@@ -70,7 +87,7 @@ def getalldata(images, masks, data_percs, splits, seed):
     masks_dict = {}
     split_dicts = {}
     for i in range(len(data_percs)):
-        assert images.shape[0] == masks.shape[0]
+        assert np.shape(images)[0] == np.shape(masks)[0]
         amount = int(images.shape[0] * data_percs[i])
         random.seed(seed)
         ind = random.sample(range(images.shape[0]), amount)
