@@ -50,7 +50,7 @@ def get_split(images, masks, split, seed):
 
     return train_images, train_masks, val_images, val_masks, test_images, test_masks
 
-def get_splits(images, masks, splits, seed):
+def get_splits(images, masks, splits, seeds):
     # split in form of {1:(0.2, 0.2), 2:(0.3, 0.4)}
     # return: {split1: {train_images_split1: (100,96,96), train_masks_split1: ... }, split2: {}} for every split
 
@@ -61,7 +61,7 @@ def get_splits(images, masks, splits, seed):
         labels = ["train_images", "train_masks", "val_images", "val_masks",
                   "test_images", "test_masks"]
         train_images, train_masks, val_images, val_masks, test_images, test_masks = get_split(images, masks, split,
-                                                                                              seed)
+                                                                                              seeds[j])
         data = [train_images, train_masks, val_images, val_masks, test_images, test_masks]
         for i in range(len(data)):
             split_data[labels[i]] = data[i]
@@ -82,20 +82,20 @@ def get_datasets(data, split_number):
     return train_images, train_masks, val_images, val_masks, test_images, test_masks
 
 
-def getalldata(images, masks, data_percs, splits, seed):
+def getalldata(images, masks, data_percs, splits, seeds):
     images_dict = {}
     masks_dict = {}
     split_dicts = {}
     for i in range(len(data_percs)):
         assert np.shape(images)[0] == np.shape(masks)[0]
         amount = int(images.shape[0] * data_percs[i])
-        random.seed(seed)
+        random.seed(seeds[0])
         ind = random.sample(range(images.shape[0]), amount)
         images_dict[i] = images[ind]
         masks_dict[i] = masks[ind]
 
     for j in range(len(images_dict)):
-        split_dicts[str(data_percs[j]) + "Perc"] = get_splits(images_dict[j], masks_dict[j], splits, seed)
+        split_dicts[str(data_percs[j]) + "Perc"] = get_splits(images_dict[j], masks_dict[j], splits, seeds)
 
     return split_dicts
 

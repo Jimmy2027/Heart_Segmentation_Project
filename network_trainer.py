@@ -28,15 +28,15 @@ whichmodels = ['twolayernetwork']
 
 
 
-seeds = [1] # for reproducibility
+seeds = [1, 2, 3] # for reproducibility
 # seeds = [1]
 
 # data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
 data_percs = [0.25]
 slice_perc = 0.25
 filters = 64
-# splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
-splits = {1: (0.3,0.1)}
+splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
+# splits = {1: (0.3,0.1)}
 epochs = 1
 threshold = 0.5
 
@@ -88,8 +88,8 @@ if whichdataset == 'ACDC':
 
 data_dict = []
 
-for seed in seeds:
-    data_dict.append(methods.getalldata(input, labels, data_percs, splits, seed))  # data_dict contains 3 times 3 splits
+
+data_dict.append(methods.getalldata(input, labels, data_percs, splits, seeds))  # data_dict contains 3 splits
 
 # total_numslices = np.concatenate(input[:]).shape[0]
 # num_trainslices = np.concatenate(data_dict[0]['1Perc']['Split#0']['train_images'][:]).shape[0]
@@ -130,7 +130,7 @@ for whichmodel in whichmodels:
                 print('training', whichmodel, 'on', whichdataset,'with', whichloss, 'as loss,', str(layers), 'layers', str(data_percs[perc_index]), 'perc_index and split number:', str(split_number))
                 print("******************************************")
 
-                data = data_dict[split_number][str(data_percs[perc_index]) + "Perc"]
+                data = data_dict[0][str(data_percs[perc_index]) + "Perc"]
 
                 x_train, y_train, x_val, y_val, x_test, y_test = \
                     methods.get_datasets(data, split_number)
