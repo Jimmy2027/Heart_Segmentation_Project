@@ -15,6 +15,7 @@ from medpy.metric.binary import dc, hd
 import keras
 import keras.preprocessing as kp
 
+data_augm = False
 
 whichloss = 'binary_crossentropy'
 # whichloss = 'dice'
@@ -23,21 +24,21 @@ whichdataset = 'ACDC'
 # whichmodel = 'param_unet'
 # whichmodel = 'unet'
 
-whichmodels = ['twolayernetwork']
-# whichmodels = ['param_unet', 'segnetwork']
+# whichmodels = ['twolayernetwork']
+whichmodels = ['param_unet']
 
 
 
-seeds = [1, 2, 3] # for reproducibility
+seeds = [1, 2, 3, 4] # for reproducibility
 # seeds = [1]
-
-# data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
-data_percs = [0.25]
-slice_perc = 0.25
+batch_size = 32
+data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
+# data_percs = [0.25]
+slice_perc = 1
 filters = 64
 splits = {1: (0.3, 0.1), 2: (0.3, 0.1), 3: (0.3, 0.1)}  # values for test and validation percentages
 # splits = {1: (0.3,0.1)}
-epochs = 1
+epochs = 100
 threshold = 0.5
 
 all_results = []
@@ -117,13 +118,14 @@ With this piece of code one can save the splits as images to visualize them
 
 for whichmodel in whichmodels:
     if whichmodel == 'param_unet':
-        # layers_arr = [2, 3, 4, 5]
-        layers_arr = [2]
+        layers_arr = [6, 7, 8, 9]
+        # layers_arr = [2]
 
     else:
         layers_arr = [1]
     for layers in layers_arr:
-
+        if layers>5:
+            batch_size = batch_size/2
         for perc_index in range(len(data_percs)):
             for split_number in range(len(splits)):
                 print("******************************************")
@@ -193,17 +195,17 @@ for whichmodel in whichmodels:
                     os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' + str(layers)+'layers/' + str(split_number) + 'split')
 
                 save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients/' + str(layers) + 'layers/' + str(split_number) + 'split'
-
-                datagen = kp.image.ImageDataGenerator(
-                    featurewise_center=True,
-                    featurewise_std_normalization=True,
-                    rotation_range=20,
-                    width_shift_range=0.2,
-                    height_shift_range=0.2,
-                    horizontal_flip=True)
-                # compute quantities required for featurewise normalization
-                # (std, mean, and principal components if ZCA whitening is applied)
-                datagen.fit(x_train)
+                if data_augm==True:
+                    datagen = kp.image.ImageDataGenerator(
+                        featurewise_center=True,
+                        featurewise_std_normalization=True,
+                        rotation_range=20,
+                        width_shift_range=0.2,
+                        height_shift_range=0.2,
+                        horizontal_flip=True)
+                    # compute quantities required for featurewise normalization
+                    # (std, mean, and principal components if ZCA whitening is applied)
+                    datagen.fit(x_train)
 
                 if whichmodel == 'param_unet' or whichmodel == 'unet':
 
@@ -212,7 +214,9 @@ for whichmodel in whichmodels:
                                                   baseline=None, restore_best_weights=False)
 
 
-                    history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val,y_val))
+                    if data_augm ==True:
+                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val,y_val), batch_size =batch_size )
+                    else: history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val, y_val), batch_size = batch_size)
                 else:
                     model.summary()
                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
@@ -225,8 +229,11 @@ for whichmodel in whichmodels:
                         model.compile(loss='binary_crossentropy',
                                       optimizer='adam',
                                       metrics=['accuracy'])
+                    if data_augm == True:
+                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=batch_size), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
+                    else:
+                        history = model.fit(x_train, y_train, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping], batch_size = batch_size)
 
-                    history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
 
 
 
