@@ -99,6 +99,81 @@ def getalldata(images, masks, data_percs, splits, seeds):
 
     return split_dicts
 
+def get_patient_perc_split(total_imgs, total_masks, pats, perc):
+    images = []
+    masks = []
+    img_slices = []
+    mask_slices = []
+    min_length = min([len(total_imgs[i]) for i in range(len(total_imgs))])
+    for patient in pats:
+        amount = max(int(perc * min_length), 1)
+        if perc - amount / min_length >= 0.5 * 1 / min_length:
+            amount += 1
+        indices = random.sample(range(min_length), amount)
+        for index in indices:
+            img_slices.append(total_imgs[patient][index])
+            mask_slices.append(total_masks[patient][index])
+
+    for slice in img_slices:
+        images.append(slice)
+    for slice in mask_slices:
+        masks.append(slice)
+    return np.array(images, dtype=float), np.array(masks, dtype=float)
+
+def get_patient_split(pats_amount, split):
+
+    test_perc = split[0]
+    val_perc = split[1]
+    train_perc = 1 - test_perc - val_perc
+
+    test_pat_amount = max(int(test_perc * pats_amount), 1)
+    val_pat_amount = max(int(val_perc * pats_amount), 1)
+    train_pat_amount = max(int(train_perc * pats_amount), 1)
+
+    indices = list(range(pats_amount))
+
+    train_inds = random.sample(indices, train_pat_amount)
+    train_pats = []
+    for index in train_inds:
+        train_pats.append(index)
+        indices.remove(index)
+
+    test_inds = random.sample(indices, test_pat_amount)
+    test_pats = []
+    for index in test_inds:
+        test_pats.append(index)
+        indices.remove(index)
+
+    val_inds = random.sample(indices, val_pat_amount)
+    val_pats = []
+    for index in val_inds:   # remaining patients go to val (remaining after rounding train_perc and test_perc to int)
+        val_pats.append(index)
+        indices.remove(index)
+
+    pat_splits = [train_pats, test_pats, val_pats]
+
+    train_diff = train_perc - len(train_pats) / pats_amount*100
+    test_diff = test_perc - len(test_pats) / pats_amount * 100
+    val_diff = val_perc - len(val_pats) / pats_amount * 100
+    diffs = [train_diff, test_diff, val_diff]
+
+    if len(indices) > 0:
+        pat_splits[diffs.index(max(diffs))].append(indices[0])
+        diffs.remove(max(diffs))
+    if len(indices) > 1:
+        pat_splits[diffs.index(max(diffs))].append(indices[1])
+        diffs.remove(max(diffs))
+    if len(indices) > 2:
+        pat_splits[diffs.index(max(diffs))].append(indices[2])
+
+    return train_pats, test_pats, val_pats
+
+def get_total_perc_pats(pats, perc):
+    amount = max(int(perc*len(pats)), 1)
+    if perc - amount / len(pats) >= 0.5 * 1 / len(pats):
+        amount += 1
+    perc_pats = random.sample(pats, amount)
+    return perc_pats
 
 def data_normalization(data):
     """
