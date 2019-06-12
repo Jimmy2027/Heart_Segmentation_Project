@@ -214,29 +214,7 @@ def unet(input_size, whichloss, pretrained_weights=None):
 
     return model
 
-#
-def smallsegnetwork(img_shape, kernel_size, Dropout_rate):
-    model = Sequential()
 
-    # Encoder Layers
-    model.add(Conv2D(32, kernel_size, activation='relu', padding='same', input_shape=img_shape))
-    model.add(BatchNormalization())
-    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-    model.add(Dropout(Dropout_rate))
-
-    # Decoder Layers
-    model.add(UpSampling2D((2, 2)))
-    model.add(Dropout(Dropout_rate))
-    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Conv2D(32, kernel_size, activation='relu', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Conv2D(1, 1, activation='sigmoid', padding='same'))
-
-    whichmodel = 'smallsegnetwork'
-    return model, whichmodel
 
 
 def twolayernetwork(img_shape, kernel_size, Dropout_rate):
@@ -253,8 +231,8 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
 
 if __name__ == '__main__':      #only gets called if Unet.py is run
 
-    model = param_unet((128,128,1), 64, 5, 0.5, 'dice')
+    model = segnetwork((128,128,1), 3, 0.5)
 
     from keras.utils import plot_model
 
-    plot_model(model, to_file='param_unet5.png', show_shapes=True)
+    plot_model(model, to_file='SegNet.png', show_shapes=True)
