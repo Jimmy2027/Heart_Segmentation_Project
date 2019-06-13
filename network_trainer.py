@@ -19,11 +19,12 @@ import tensorflow as tf
 data_augm = False
 
 whichlosses = ['binary_crossentropy']
-whichdatasets = ['York', 'ACDC']
+# whichdatasets = ['York', 'ACDC']
+whichdatasets = ['ACDC']
 
 
-# whichmodels = ['twolayernetwork']
-whichmodels = ['param_unet']
+whichmodels = ['twolayernetwork']
+# whichmodels = ['param_unet']
 
 
 
@@ -36,7 +37,7 @@ slice_percs = [0.25, 0.5, 0.75, 1]
 filters = 64
 splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 
-epochs = 100
+epochs = 1
 threshold = 0.5
 
 all_results = []
@@ -53,7 +54,6 @@ for whichdataset in whichdatasets:
             #     plt.hist(np.unique(labels[i][:]))
             #
             # plt.show()
-            input, labels = methods.slice_perc(input, labels, slice_percs)
 
 
         if whichdataset == 'ACDC':
@@ -84,7 +84,6 @@ for whichdataset in whichdatasets:
             # plt.show()
             old_input = input
             old_labels = labels
-            # input, labels = methods.slice_perc(input, labels, slice_percs)
 
         data_dict = []
 
@@ -150,7 +149,7 @@ for whichdataset in whichdatasets:
 
                                 print("****************************************************************************************************************")
                                 print("EXPERIMENT:", layers, "layers,", perc * 100, "% total data,", slice_perc * 100, "% per pat,",
-                                      whichloss, "loss function,", "seed", split_number)
+                                      whichloss, " as loss function,", "seed", split_number)
                                 print("TRAIN DATA SIZE", x_train.shape[0])
                                 print("VALIDATION DATA SIZE", x_val.shape[0])
                                 # print("TEST DATA SIZE", x_test.shape[0])
@@ -205,17 +204,17 @@ for whichdataset in whichdatasets:
                             if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(data_percs[perc_index])+'patients'):
                                 os.makedirs(path + '/'+ whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients')
 
-                            if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(data_percs[perc_index])+'patients' + '/' + str(slice_percs) + 'slices'):
+                            if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(data_percs[perc_index])+'patients' + '/' + str(slice_perc) + 'slices'):
                                 os.makedirs(
-                                    path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients'+ '/' + str(slice_percs) + 'slices')
+                                    path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients'+ '/' + str(slice_perc) + 'slices')
 
-                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_percs) + 'slices' + str(layers)+'layers'):
-                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/'+  '/' + str(slice_percs) + 'slices' +  str(layers)+'layers')
+                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + str(layers)+'layers'):
+                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/'+  '/' + str(slice_perc) + 'slices' +  str(layers)+'layers')
 
-                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_percs) + 'slices' + '/' + str(layers)+'layers/' + str(split_number) + 'split'):
-                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_percs) + 'slices' + '/' +str(layers)+'layers/' + str(split_number) + 'split')
+                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers/' + str(split_number) + 'split'):
+                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' +str(layers)+'layers/' + str(split_number) + 'split')
 
-                            save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients/' +  '/' + str(slice_percs) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
+                            save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
                             if data_augm==True:
                                 datagen = kp.image.ImageDataGenerator(
                                     featurewise_center=True,
