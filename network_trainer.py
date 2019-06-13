@@ -19,12 +19,12 @@ import tensorflow as tf
 data_augm = False
 
 whichlosses = ['binary_crossentropy']
-# whichdatasets = ['York', 'ACDC']
-whichdatasets = ['ACDC']
+whichdatasets = ['York', 'ACDC']
+# whichdatasets = ['ACDC']
 
 
-whichmodels = ['twolayernetwork']
-# whichmodels = ['param_unet']
+# whichmodels = ['twolayernetwork']
+whichmodels = ['param_unet']
 
 
 
@@ -37,7 +37,7 @@ slice_percs = [0.25, 0.5, 0.75, 1]
 filters = 64
 splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 
-epochs = 1
+epochs = 100
 threshold = 0.5
 
 all_results = []
