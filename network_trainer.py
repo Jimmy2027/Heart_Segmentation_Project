@@ -208,8 +208,8 @@ for whichdataset in whichdatasets:
                                 os.makedirs(
                                     path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients'+ '/' + str(slice_perc) + 'slices')
 
-                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + str(layers)+'layers'):
-                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/'+  '/' + str(slice_perc) + 'slices' +  str(layers)+'layers')
+                            if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index]) +'patients/' +  '/' + str(slice_perc) + 'slices' + str(layers)+'layers'):
+                                os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/'+  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers')
 
                             if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers/' + str(split_number) + 'split'):
                                 os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' +str(layers)+'layers/' + str(split_number) + 'split')
