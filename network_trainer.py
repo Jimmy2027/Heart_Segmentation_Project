@@ -16,7 +16,7 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
-testing = False
+testing = True
 data_augm = False
 
 if testing == True:
@@ -320,6 +320,8 @@ for whichdataset in whichdatasets:
                                     "model" : whichmodel,
                                     "epochs": epochs,
                                     "threshold": threshold,
+                                    'history': history,
+                                    'epochs': history.epoch,
                                     "dice": "dice",
                                     "roc_auc": "roc_auc",
                                     "median_dice_score": "median_dice_score",
