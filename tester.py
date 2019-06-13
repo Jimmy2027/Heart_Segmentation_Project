@@ -271,6 +271,27 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     plt.show()
 
 
+def get_plot():
+
+    fig, (ax) = plt.subplots(1)
+    ind = np.arange(len(means))
+    width = 0.2
+
+    ax.bar(ind - width * 3 / 2, means[0], width, yerr=stds[0], label='1')
+    ax.bar(ind - width * 1 / 2, means[1], width, yerr=stds[1], label='2')
+    ax.bar(ind + width * 1 / 2, means[2], width, yerr=stds[2], label='3')
+    ax.bar(ind + width * 3 / 2, means[3], width, yerr=stds[3], label='4')
+
+    names = ['25%', '50%', '75%', '100%']
+    ax.set_ylim(0, 1)
+    ax.set_xticks(ind)
+    ax.set_xticklabels(names)
+    ax.set_xlabel('of total patients')
+    ax.set_title('Dice score vs percentages of patients (' + str(4) + ' evaluations per bar)')
+    ax.legend()
+    fig.tight_layout()
+    plt.show()
+
 
 
 def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layers):

@@ -20,6 +20,7 @@ def dice_coef(y_true, y_pred, smooth=1):
     """
     intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
     return (2. * intersection + smooth) / (K.sum(K.square(y_true),-1) + K.sum(K.square(y_pred),-1) + smooth)
+#TODO try without squring (sum)
 
 def dice_coef_loss(y_true, y_pred):
     return 1-dice_coef(y_true, y_pred)
@@ -139,7 +140,7 @@ def param_unet(input_size, filters, layers, dropout_rate, whichloss, pretrained_
     model = Model(input=inputs, output=conv_final)
 
     if whichloss == 'dice':
-        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss, metrics=['accuracy', dice_coef])
     if whichloss == 'binary_crossentropy':
         model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
 

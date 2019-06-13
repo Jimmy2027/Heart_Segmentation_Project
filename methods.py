@@ -110,12 +110,13 @@ def get_patient_perc_split(total_imgs, total_masks, pats, perc, test = False):
         if perc - amount / total_slices >= 0.5 * 1 / total_slices:
             amount += 1
         indices = random.sample(range(total_slices), amount)
+        temp = len(img_slices)
         for index in indices:
             img_slices.append(total_imgs[patient][index])
             mask_slices.append(total_masks[patient][index])
         if test:
-            images.append(np.array(img_slices, dtype=float))
-            masks.append(np.array(mask_slices, dtype=float))
+            images.append(np.array(img_slices[temp:len(img_slices)], dtype=float))
+            masks.append(np.array(mask_slices[temp:len(img_slices)], dtype=float))
     if not test:
         for slice in img_slices:
             images.append(slice)

@@ -16,25 +16,33 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
+testing = False
 data_augm = False
 
-whichlosses = ['binary_crossentropy']
-# whichdatasets = ['York', 'ACDC']
-whichdatasets = ['ACDC']
+if testing == True:
+    whichlosses = ['binary_crossentropy']
+    whichdatasets = ['ACDC']
+    whichmodels = ['twolayernetwork']
+    seeds = [1]
+    data_percs = [0.25]
+    slice_percs = [0.25]
+    batch_size = 1
 
 
-whichmodels = ['twolayernetwork']
-# whichmodels = ['param_unet']
+else :
+    whichlosses = ['binary_crossentropy']
+    whichdatasets = ['York', 'ACDC']
+    whichmodels = ['param_unet']
+    seeds = [1, 2, 3, 4]  # for reproducibility
+    data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    batch_size = 32
+
+#TODO write val loss every epoch in txt file
 
 
 
-seeds = [1, 2, 3, 4] # for reproducibility
-# seeds = [1]
-batch_size = 32
-# data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
-data_percs = [0.25]
-# slice_percs = [0.25, 0.5, 0.75, 1]
-slice_percs = [0.25]
+
 filters = 64
 splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 
@@ -143,8 +151,13 @@ for whichdataset in whichdatasets:
                                 val_pats = methods.get_total_perc_pats(val_pats, 1)
 
                                 x_train, y_train= methods.get_patient_perc_split(input, labels, train_pats, slice_perc)
-                                x_test, y_test= methods.get_patient_perc_split(input, labels, test_pats, 1, test = True)
-                                x_val, y_val= methods.get_patient_perc_split(input, labels, val_pats, 1)
+                                if testing == True:
+                                    x_test, y_test = methods.get_patient_perc_split(input, labels, test_pats, slice_perc,
+                                                                                    test=True)
+                                    x_val, y_val = methods.get_patient_perc_split(input, labels, val_pats, slice_perc)
+                                else:
+                                    x_test, y_test= methods.get_patient_perc_split(input, labels, test_pats, 1, test = True)
+                                    x_val, y_val= methods.get_patient_perc_split(input, labels, val_pats, 1)
 
                                 input_size = x_train.shape[1:4]
 
