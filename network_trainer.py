@@ -162,7 +162,8 @@ for whichdataset in whichdatasets:
                                 y_train = np.expand_dims(y_train, -1)
                                 x_val = np.expand_dims(x_val, -1)
                                 y_val = np.expand_dims(y_val, -1)
-
+                                x_test = np.array(x_test)
+                                y_test = np.array(y_test)
 
 
                                 resolution = x_train.shape[1]
