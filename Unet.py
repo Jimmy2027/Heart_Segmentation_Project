@@ -19,7 +19,7 @@ def dice_coef(y_true, y_pred, smooth=1):
     ref: https://arxiv.org/pdf/1606.04797v1.pdf
     """
     intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
-    return (2. * intersection + smooth) / (K.sum(K.square(y_true),-1) + K.sum(K.square(y_pred),-1) + smooth)
+    return (2. * intersection + smooth) / (K.sum((y_true),-1) + K.sum((y_pred),-1) + smooth)
 #TODO try without squring (sum)
 
 def dice_coef_loss(y_true, y_pred):
