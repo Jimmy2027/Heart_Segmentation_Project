@@ -270,7 +270,10 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     fig.subplots_adjust(top=0.8)
     plt.show()
 
-def plot_thrdice_vs_datapercs_vs_model(whichdataset, whichmodel, layers):
+
+
+
+def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layers):
     basepath = whichdataset +'_results/'
     losses = ['binary_crossentropy', 'dice']
     datapercs = [0.25, 0.5, 0.75, 1]
@@ -370,7 +373,7 @@ def save_plts():
                 layers = [2,3,4,5]
             else: layers = [1]
             for layer in layers:
-                plot_thrdice_vs_datapercs_vs_model(dataset, network, layer)
+                plot_thrdice_vs_datapercs_for_model(dataset, network, layer)
 
 
 if __name__ == '__main__':
