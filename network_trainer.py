@@ -27,6 +27,7 @@ if testing == True:
     data_percs = [0.25]
     slice_percs = [0.25]
     batch_size = 1
+    epochs = 1
 
 
 else :
@@ -37,6 +38,7 @@ else :
     data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
     slice_percs = [0.25, 0.5, 0.75, 1]
     batch_size = 32
+    epochs = 500
 
 #TODO write val loss every epoch in txt file
 
@@ -46,7 +48,6 @@ else :
 filters = 64
 splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 
-epochs = 1
 threshold = 0.5
 
 all_results = []
@@ -246,7 +247,7 @@ for whichdataset in whichdatasets:
 
                                     model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=100)
                                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
-                                                                  baseline=None, restore_best_weights=False)
+                                                                  baseline=None, restore_best_weights=True)
 
 
                                     if data_augm ==True:
@@ -255,7 +256,7 @@ for whichdataset in whichdatasets:
                                 else:
                                     model.summary()
                                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
-                                                                  baseline=None, restore_best_weights=False)
+                                                                  baseline=None, restore_best_weights=True)
                                     if whichloss == 'dice':
                                         model.compile(loss=unet.dice_coef_loss,
                                                   optimizer='adam',
