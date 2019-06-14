@@ -20,7 +20,7 @@ data_augm = False
 
 whichloss = 'binary_crossentropy'
 # whichdatasets = ['York', 'ACDC']
-whichdataset = 'York'
+whichdataset = 'ACDC'
 
 
 whichmodels = ['twolayernetwork']
@@ -40,14 +40,7 @@ splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 epochs = 100
 threshold = 0.5
 
-# amount_training_datas = {
-#     '1pat1scl' : [],
-#     '1pat1scl': [],
-#     '1pat1scl': [],
-#     '1pat1scl': [],
-#     '1pat1scl': [],
-#
-# }
+
 amount_training_data_split1 = []
 amount_training_data_split2 = []
 amount_training_data_split3 = []
@@ -197,4 +190,4 @@ for example : amount_training_data_ACDC[0][0][0] is for split 1, 0,25% for perso
 """
 something = 0
 
-np.save('amount_training_data_York', amount_training_data_York)
+np.save('amount_training_data_ACDC', amount_training_data_York)

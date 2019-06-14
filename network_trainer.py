@@ -24,7 +24,7 @@ if testing == True:
     whichdatasets = ['ACDC']
     whichmodels = ['twolayernetwork']
     seeds = [1]
-    data_percs = [0.25]
+    pers_percs = [0.25]
     slice_percs = [0.25]
     batch_size = 1
     epochs = 1
@@ -35,7 +35,7 @@ else :
     whichdatasets = ['York', 'ACDC']
     whichmodels = ['param_unet']
     seeds = [1, 2, 3, 4]  # for reproducibility
-    data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
+    pers_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
     slice_percs = [0.25, 0.5, 0.75, 1]
     batch_size = 32
     epochs = 500
@@ -135,7 +135,7 @@ for whichdataset in whichdatasets:
                         batch_size = batch_size//2
                     if layers > 6:
                         batch_size = batch_size//4
-                    for perc_index, perc in enumerate(data_percs):
+                    for perc_index, perc in enumerate(pers_percs):
                         for slice_perc in slice_percs:
                             for split_number in seeds:
                                 random.seed(split_number)
@@ -217,20 +217,20 @@ for whichdataset in whichdatasets:
                                     os.makedirs(path + '/' + whichmodel)
                                 if not os.path.exists(path + '/' + whichmodel + '/' + whichloss):
                                     os.makedirs(path + '/' + whichmodel + '/' + whichloss)
-                                if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(data_percs[perc_index])+'patients'):
-                                    os.makedirs(path + '/'+ whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients')
+                                if not os.path.exists(path + '/' + whichmodel + '/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients'):
+                                    os.makedirs(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients')
 
-                                if not os.path.exists(path + '/'+whichmodel + '/' + whichloss+'/'+str(data_percs[perc_index])+'patients' + '/' + str(slice_perc) + 'slices'):
+                                if not os.path.exists(path + '/' + whichmodel + '/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients' + '/' + str(slice_perc) + 'slices'):
                                     os.makedirs(
-                                        path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients'+ '/' + str(slice_perc) + 'slices')
+                                        path + '/' + whichmodel + '/' + whichloss + '/' + str(pers_percs[perc_index]) + 'patients' + '/' + str(slice_perc) + 'slices')
 
-                                if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index]) +'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers'):
-                                    os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/'+  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers')
+                                if not os.path.exists(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers'):
+                                    os.makedirs(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers')
 
-                                if not os.path.exists(path + '/' + whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers)+'layers/' + str(split_number) + 'split'):
-                                    os.makedirs(path + '/'+whichmodel+'/' + whichloss+'/'+ str(data_percs[perc_index])+'patients/' +  '/' + str(slice_perc) + 'slices' + '/' +str(layers)+'layers/' + str(split_number) + 'split')
+                                if not os.path.exists(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'):
+                                    os.makedirs(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split')
 
-                                save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(data_percs[perc_index]) + 'patients/' +  '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
+                                save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
                                 if data_augm==True:
                                     datagen = kp.image.ImageDataGenerator(
                                         featurewise_center=True,
@@ -245,7 +245,7 @@ for whichdataset in whichdatasets:
 
                                 if whichmodel == 'param_unet' or whichmodel == 'unet':
 
-                                    model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=100)
+                                    # model_checkpoint = ModelCheckpoint(save_dir + '/unet.{epoch:02d}.hdf5', monitor='loss', verbose=1, save_best_only=True, period=200)
                                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
                                                                   baseline=None, restore_best_weights=True)
 
@@ -316,7 +316,7 @@ for whichdataset in whichdatasets:
                                 results = {
                                     "median_ROC_AUC_": "median_ROC_AUC",
                                     "median_thresholded_dice": "median_thresholded_dice",
-                                    "number_of_patients" : data_percs[perc_index],
+                                    "number_of_patients" : pers_percs[perc_index],
                                     "model" : whichmodel,
                                     "epochs": epochs,
                                     "threshold": threshold,

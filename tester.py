@@ -9,7 +9,7 @@ import scoring_utils as su
 from textwrap import wrap
 import matplotlib.cm as cm
 
-basepath = 'York_results/'
+basepath = 'York_results'
 endfolder = False
 modalites = os.listdir(basepath)
 
@@ -23,49 +23,39 @@ def read_dice_score(model, lossfunction, patients, layers, split):
 
 
 
-def compute_dice_score(model, lossfunction, patients, layers, split):
-    for folder in os.listdir(
-        os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split')):
-        if folder.endswith('y_pred.npy'):
-            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', folder))
-        if folder.endswith('y_test.npy'):
-            y_test = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(layers) + 'layers', str(split) + 'split', folder))
+def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split):
+    """
+    Computes the median dice scor for a split and the std
+    :param model:
+    :param lossfunction:
+    :param patients:
+    :param slice_perc:
+    :param layers:
+    :param split:
+    :return:
+    """
 
-    dice = []
+
+    for folder in os.listdir(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(slice_perc)+'slices',str(layers) + 'layers', str(split) + 'split')):
+        if folder.endswith('y_pred.npy'):
+            y_pred = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(slice_perc)+'slices',str(layers) + 'layers', str(split) + 'split', folder))
+        if folder.endswith('y_test.npy'):
+            y_test = np.load(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(slice_perc)+'slices',str(layers) + 'layers', str(split) + 'split', folder))
+
     output = []
     dice_threshold = []
     threshold = 0.5
+
     for i in range(len(y_test)):
         output.append(np.squeeze(y_pred[i]))
         for s in range(y_test[i].shape[0]):
-            dice.append(dc(output[i][s], y_test[i][s]))
             dice_threshold.append(dc(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
 
-    median_dice_score = np.median(dice)
     median_thrdice_score = np.median(dice_threshold)
+    avr_thrdicesocre = np.average(dice_threshold)
+    std = np.std(dice_threshold)
 
-    plt.figure()
-    plt.hist(np.unique(y_pred[0]))
-    plt.title('mds: ' + str(round(median_dice_score, 4)))
-    plt.show()
-
-    plt.figure()
-    plt.title('dice: ' + str(round(dice[0], 4)))
-    plt.imshow(y_pred[0][0,:,:,0],cmap='gray')
-    plt.show()
-
-    plt.figure()
-    plt.title('thr dice ' + str(round(dice_threshold[0], 4)))
-    plt.imshow(np.where(y_pred[0][0,:,:,0] > threshold, 1, 0),cmap='gray')
-    plt.show()
-
-    plt.figure()
-    plt.hist(np.unique(np.where(y_pred[0][0,:,:,0] > threshold, 1, 0)))
-    plt.title('med thr dice ' + str(
-        round(median_thrdice_score, 4)))
-    plt.show()
-
-    return median_dice_score, median_thrdice_score
+    return median_thrdice_score, std
 
 def find_results(path, results):
     for folder in os.listdir(path):
@@ -271,8 +261,75 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     plt.show()
 
 
-def get_plot():
+def get_plot(whichdataset, whichmodel):
 
+    basepath = whichdataset +'_results/'
+    loss = 'binary_crossentropy'
+    pers_percs = [0.25, 0.5]
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1,2,3,4]
+    layers = [4]
+
+
+
+    dices025 = []
+    dices05 = []
+    dices075 = []
+    dices1 = []
+    dices025_std = []
+    dices05_std = []
+    dices075_std = []
+    dices1_std = []
+    for layer in layers:
+        for pers_perc in pers_percs:
+            for slice_perc in slice_percs:
+                for split in splits:
+                    if pers_perc == 0.25:
+                        dices025.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices025_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 0.5:
+                        dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices05_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 0.75:
+                        dices075.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices075_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 1:
+                        dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices1_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+
+
+
+        rounding_num = 2
+        med_dice025 = round(np.median(dices025), rounding_num)
+        std_dice025 = round(np.median(dices025_std),rounding_num)
+        med_dice05 = round(np.median(dices05),rounding_num)
+        std_dice05 = round(np.median(dices05_std),rounding_num)
+        med_dice075 = round(np.mean(dices075),rounding_num)
+        std_dice075 = round(np.median(dices075_std),rounding_num)
+        med_dice1 = round(np.mean(dices1),rounding_num)
+        std_dice1 = round(np.median(dices1_std),rounding_num)
+
+        if layer == layers[0]:
+            param_unet2_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet2_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+        if layer == layers[1]:
+            param_unet3_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet3_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+        if layer == layers[2]:
+            param_unet4_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet4_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+        if layer == layers[3]:
+            param_unet5_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet5_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+        if layer == layers[4]:
+            param_unet6_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet6_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+        if layer == layers[5]:
+            param_unet7_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            param_unet7_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+
+    means = [param_unet2_med_dices,param_unet3_med_dices,param_unet4_med_dices,param_unet5_med_dices,param_unet6_med_dices,param_unet7_med_dices]
+    stds = [param_unet2_std_dices,param_unet3_std_dices,param_unet4_std_dices,param_unet5_std_dices,param_unet6_std_dices,param_unet7_std_dices]
     fig, (ax) = plt.subplots(1)
     ind = np.arange(len(means))
     width = 0.2
@@ -294,47 +351,62 @@ def get_plot():
 
 
 
-def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layers):
+def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
+    slice_percs = [1]
     basepath = whichdataset +'_results/'
-    losses = ['binary_crossentropy', 'dice']
-    datapercs = [0.25, 0.5, 0.75, 1]
+    losses = ['binary_crossentropy']
+    pers_percs = [0.25, 0.5]
+    splits = [1,2,3,4]
     for loss in losses:
-        results = []
-        results = find_results(basepath, results)
+
+
         dices025 = []
         dices05 = []
         dices075 = []
         dices1 = []
+        dices025_std = []
+        dices05_std = []
+        dices075_std = []
+        dices1_std = []
 
-
-        for dict in results:
-            if dict["loss"] == loss:
-                if dict["model"] == whichmodel and dict['unet_layers'] == layers:
-                    if dict["number_of_patients"] == datapercs[0]:
-                        dices025.append(dict["median_thresholded_dice"])
-                    if dict["number_of_patients"] == datapercs[1]:
-                        dices05.append(dict["median_thresholded_dice"])
-                    if dict["number_of_patients"] == datapercs[2]:
-                        dices075.append(dict["median_thresholded_dice"])
-                    if dict["number_of_patients"] == datapercs[3]:
-                        dices1.append(dict["median_thresholded_dice"])
+        for pers_perc in pers_percs:
+            for slice_perc in slice_percs:
+                for split in splits:
+                    if pers_perc == 0.25:
+                        dices025.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices025_std.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 0.5:
+                        dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices05_std.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 0.75:
+                        dices075.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices075_std.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    if pers_perc == 1:
+                        dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
+                        dices1_std.append(
+                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
 
             rounding_num = 2
-            med_dice025 = round(np.median(dices025),rounding_num)
-            std_dice025 = round(np.std(dices025),rounding_num)
-            med_dice05 = round(np.median(dices05),rounding_num)
-            std_dice05 = round(np.std(dices05),rounding_num)
-            med_dice075 = round(np.mean(dices075),rounding_num)
-            std_dice075 = round(np.std(dices075),rounding_num)
-            med_dice1 = round(np.mean(dices1),rounding_num)
-            std_dice1 = round(np.std(dices1),rounding_num)
+            med_dice025 = round(np.median(dices025), rounding_num)
+            std_dice025 = round(np.median(dices025_std), rounding_num)
+            med_dice05 = round(np.median(dices05), rounding_num)
+            std_dice05 = round(np.median(dices05_std), rounding_num)
+            med_dice075 = round(np.mean(dices075), rounding_num)
+            std_dice075 = round(np.median(dices075_std), rounding_num)
+            med_dice1 = round(np.mean(dices1), rounding_num)
+            std_dice1 = round(np.median(dices1_std), rounding_num)
 
             if loss == losses[0]:
                 bincross_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
                 bincross_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
-            if loss == losses[1]:
-                dice_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
-                dice_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+            # if loss == losses[1]:
+            #     dice_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+            #     dice_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
 
 
     ind = np.arange(len(bincross_med_dices))  # the x locations for the groups
@@ -343,13 +415,13 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layers):
     fig, ax = plt.subplots()
     rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
                     label='binary_cross')
-    rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
-                    label='Dice')
+    # rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
+    #                 label='Dice')
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layers))
+    ax.set_title('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
     ax.legend(loc = 2)
@@ -374,24 +446,24 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layers):
                         ha=ha[xpos], va='bottom')
 
     autolabel(rects1, "left")
-    autolabel(rects2, "right")
+    # autolabel(rects2, "right")
 
     fig.tight_layout()
-    title = ax.set_title("\n".join(wrap('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layers), 60)))
+    title = ax.set_title("\n".join(wrap('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
 
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(basepath+ whichmodel + str(layers))
+    plt.savefig(basepath+ whichmodel + str(layer))
     plt.show()
 
 def save_plts():
-    datasets = ['York', 'ACDC']
-    networks = ['param_unet', 'segnetwork']
+    datasets = ['York']
+    networks = ['param_unet']
     for dataset in datasets:
         for network in networks:
             if network == 'param_unet':
-                layers = [2,3,4,5]
+                layers = [4]
             else: layers = [1]
             for layer in layers:
                 plot_thrdice_vs_datapercs_for_model(dataset, network, layer)
@@ -399,5 +471,6 @@ def save_plts():
 
 if __name__ == '__main__':
     save_plts()
+    get_plot('York', 'param_unet')
 
 something = 0
