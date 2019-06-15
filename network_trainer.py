@@ -16,7 +16,7 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
-testing = True
+testing = False
 data_augm = False
 
 if testing == True:
@@ -27,7 +27,15 @@ if testing == True:
     pers_percs = [0.25]
     slice_percs = [0.25]
     batch_size = 1
-    epochs = 1
+    epochs = 5
+    """
+    Data augmentation parameters:
+    """
+    rotation_range = 20
+    width_shift_range = 0
+    height_shift_range = 0
+    horizontal_flip = False
+    vertical_flip = False
 
 
 else :
@@ -39,6 +47,14 @@ else :
     slice_percs = [0.25, 0.5, 0.75, 1]
     batch_size = 32
     epochs = 500
+    """
+    Data augmentation parameters:
+    """
+    rotation_range = 20
+    width_shift_range = 0.2
+    height_shift_range = 0.2
+    horizontal_flip = True
+    vertical_flip = True
 
 #TODO write val loss every epoch in txt file
 
@@ -136,6 +152,8 @@ for whichdataset in whichdatasets:
                     if layers > 6:
                         batch_size = batch_size//4
                     for perc_index, perc in enumerate(pers_percs):
+                        if perc != 1 and testing == False:
+                            slice_percs = [1]
                         for slice_perc in slice_percs:
                             for split_number in seeds:
                                 random.seed(split_number)
@@ -233,15 +251,30 @@ for whichdataset in whichdatasets:
                                 save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
                                 if data_augm==True:
                                     datagen = kp.image.ImageDataGenerator(
-                                        featurewise_center=True,
-                                        featurewise_std_normalization=True,
-                                        rotation_range=20,
-                                        width_shift_range=0.2,
-                                        height_shift_range=0.2,
-                                        horizontal_flip=True)
+                                        rotation_range=rotation_range,
+                                        width_shift_range=width_shift_range,
+                                        height_shift_range=height_shift_range,
+                                        horizontal_flip=horizontal_flip, vertical_flip=vertical_flip)
                                     # compute quantities required for featurewise normalization
                                     # (std, mean, and principal components if ZCA whitening is applied)
                                     datagen.fit(x_train)
+                                    datagen.fit(y_train)
+                                if data_augm == True:
+                                    if rotation_range != 0:
+                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
+                                                                     'rotation')
+                                    if width_shift_range != 0:
+                                        augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                     'augmented_data', 'width_shift')
+                                    if height_shift_range != 0:
+                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
+                                                                     'heigth_shift')
+                                    if horizontal_flip == True:
+                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
+                                                                     'horizontal_flip')
+                                    if vertical_flip == True:
+                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
+                                                                     'vertical_flip')
 
                                 if whichmodel == 'param_unet' or whichmodel == 'unet':
 
@@ -251,8 +284,8 @@ for whichdataset in whichdatasets:
 
 
                                     if data_augm ==True:
-                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val,y_val), batch_size =batch_size )
-                                    else: history = model.fit(x_train, y_train, epochs=epochs, callbacks=[model_checkpoint, early_stopping], validation_data=(x_val, y_val), batch_size = batch_size)
+                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks= early_stopping, validation_data=(x_val,y_val), batch_size =batch_size, verbose= 1)
+                                    else: history = model.fit(x_train, y_train, epochs=epochs, callbacks=early_stopping, validation_data=(x_val, y_val), batch_size = batch_size)
                                 else:
                                     model.summary()
                                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
@@ -265,8 +298,8 @@ for whichdataset in whichdatasets:
                                         model.compile(loss='binary_crossentropy',
                                                       optimizer='adam',
                                                       metrics=['accuracy'])
-                                    if data_augm == True:
-                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=batch_size), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
+
+                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=batch_size, save_to_dir=augm_save_dir), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping] )
                                     else:
                                         history = model.fit(x_train, y_train, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping], batch_size = batch_size)
 
@@ -274,7 +307,7 @@ for whichdataset in whichdatasets:
 
 
 
-
+                                model.save(save_dir + '/model'+ str(history.epoch.length)+ '.hdf5')
                                 print(history.history.keys())
 
 

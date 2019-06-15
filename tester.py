@@ -262,6 +262,12 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
 
 
 def get_plot(whichdataset, whichmodel):
+    """
+    Plots the dice scores of one model for different person percentages and different slice  percentages
+    :param whichdataset:
+    :param whichmodel:
+    :return:
+    """
 
     basepath = whichdataset +'_results/'
     loss = 'binary_crossentropy'
