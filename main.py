@@ -16,6 +16,23 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
+
+
+
+def save_split_train_images(x_train, y_train, x_save_path, y_save_path):
+
+    if not os.path.exists(x_save_path):
+        os.makedirs(x_save_path)
+    if not os.path.exists(y_save_path):
+        os.makedirs(y_save_path)
+
+    for i, x in enumerate(x_train):
+        plt.imsave(x_save_path + '/%d.png' % (i,), x, cmap='gray')
+    for i, x in enumerate(y_train):
+        plt.imsave(y_save_path + '/%d.png' % (i,), x, cmap='gray')
+
+
+
 data_augm = False
 
 whichloss = 'binary_crossentropy'
@@ -28,12 +45,11 @@ whichmodels = ['twolayernetwork']
 
 
 
-seeds = [1, 2, 3, 4] # for reproducibility
+seeds = [1,2,3,4] # for reproducibility
 # seeds = [1]
 batch_size = 32
 data_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
 # data_percs = [0.25]
-slice_percs = [0.25, 0.5, 0.75, 1]
 filters = 64
 splits = {1: (0.3, 0.1)}  # values for test and validation percentages
 
@@ -112,6 +128,11 @@ for split in splits:
             if layers > 6:
                 batch_size = batch_size//4
             for perc_index, perc in enumerate(data_percs):
+                if perc != 1:
+                    slice_percs = [1]
+                else: slice_percs = [0.25, 0.5, 0.75, 1]
+
+
                 temp_slice_perc_split1 = []
                 temp_slice_perc_split2 = []
                 temp_slice_perc_split3 = []
@@ -136,58 +157,65 @@ for split in splits:
                         x_test, y_test= methods.get_patient_perc_split(input, labels, test_pats, 1, test = True)
                         x_val, y_val= methods.get_patient_perc_split(input, labels, val_pats, 1)
 
+                        x_save_path = os.path.join('visualisation', whichdataset, 'splits', 'x_train', str(perc) + 'patients',
+                                                 str(slice_perc) + 'slices', str(split_number) + 'split')
+                        y_save_path = os.path.join('visualisation', whichdataset, 'splits', 'y_train', str(perc) + 'patients',
+                                                 str(slice_perc) + 'slices', str(split_number) + 'split')
+
+                        save_split_train_images(x_train, y_train, x_save_path, y_save_path)
 
 
-                        if split_number == 1:
-                            if slice_perc == 0.25:
-                                temp_slice_perc_split1.append(x_train.shape[0])
-                            if slice_perc == 0.5:
-                                temp_slice_perc_split1.append(x_train.shape[0])
-                            if slice_perc == 0.75:
-                                temp_slice_perc_split1.append(x_train.shape[0])
-                            if slice_perc == 1:
-                                temp_slice_perc_split1.append(x_train.shape[0])
+#                         if split_number == 1:
+#                             if slice_perc == 0.25:
+#                                 temp_slice_perc_split1.append(x_train.shape[0])
+#                             if slice_perc == 0.5:
+#                                 temp_slice_perc_split1.append(x_train.shape[0])
+#                             if slice_perc == 0.75:
+#                                 temp_slice_perc_split1.append(x_train.shape[0])
+#                             if slice_perc == 1:
+#                                 temp_slice_perc_split1.append(x_train.shape[0])
+#
+#                         if split_number == 2:
+#                             if slice_perc == 0.25:
+#                                 temp_slice_perc_split2.append(x_train.shape[0])
+#                             if slice_perc == 0.5:
+#                                 temp_slice_perc_split2.append(x_train.shape[0])
+#                             if slice_perc == 0.75:
+#                                 temp_slice_perc_split2.append(x_train.shape[0])
+#                             if slice_perc == 1:
+#                                 temp_slice_perc_split2.append(x_train.shape[0])
+#
+#                         if split_number == 3:
+#                             if slice_perc == 0.25:
+#                                 temp_slice_perc_split3.append(x_train.shape[0])
+#                             if slice_perc == 0.5:
+#                                 temp_slice_perc_split3.append(x_train.shape[0])
+#                             if slice_perc == 0.75:
+#                                 temp_slice_perc_split3.append(x_train.shape[0])
+#                             if slice_perc == 1:
+#                                 temp_slice_perc_split3.append(x_train.shape[0])
+#
+#                         if split_number == 4:
+#                             if slice_perc == 0.25:
+#                                 temp_slice_perc_split4.append(x_train.shape[0])
+#                             if slice_perc == 0.5:
+#                                 temp_slice_perc_split4.append(x_train.shape[0])
+#                             if slice_perc == 0.75:
+#                                 temp_slice_perc_split4.append(x_train.shape[0])
+#                             if slice_perc == 1:
+#                                 temp_slice_perc_split4.append(x_train.shape[0])
+#
+#                 amount_training_data_split1.append(temp_slice_perc_split1)
+#                 amount_training_data_split2.append(temp_slice_perc_split2)
+#                 amount_training_data_split3.append(temp_slice_perc_split3)
+#                 amount_training_data_split4.append(temp_slice_perc_split4)
+#
+# amount_training_data_York = [amount_training_data_split1, amount_training_data_split2, amount_training_data_split3, amount_training_data_split4]
+# """
+# amount_training_data: array where x: splits, y: person_percentage, z: slice_percentage
+# for example : amount_training_data_ACDC[0][0][0] is for split 1, 0,25% for person and slice percentage
+# """
+# something = 0
+#
+# np.save('amount_training_data_ACDC', amount_training_data_York)
 
-                        if split_number == 2:
-                            if slice_perc == 0.25:
-                                temp_slice_perc_split2.append(x_train.shape[0])
-                            if slice_perc == 0.5:
-                                temp_slice_perc_split2.append(x_train.shape[0])
-                            if slice_perc == 0.75:
-                                temp_slice_perc_split2.append(x_train.shape[0])
-                            if slice_perc == 1:
-                                temp_slice_perc_split2.append(x_train.shape[0])
-
-                        if split_number == 3:
-                            if slice_perc == 0.25:
-                                temp_slice_perc_split3.append(x_train.shape[0])
-                            if slice_perc == 0.5:
-                                temp_slice_perc_split3.append(x_train.shape[0])
-                            if slice_perc == 0.75:
-                                temp_slice_perc_split3.append(x_train.shape[0])
-                            if slice_perc == 1:
-                                temp_slice_perc_split3.append(x_train.shape[0])
-
-                        if split_number == 4:
-                            if slice_perc == 0.25:
-                                temp_slice_perc_split4.append(x_train.shape[0])
-                            if slice_perc == 0.5:
-                                temp_slice_perc_split4.append(x_train.shape[0])
-                            if slice_perc == 0.75:
-                                temp_slice_perc_split4.append(x_train.shape[0])
-                            if slice_perc == 1:
-                                temp_slice_perc_split4.append(x_train.shape[0])
-
-                amount_training_data_split1.append(temp_slice_perc_split1)
-                amount_training_data_split2.append(temp_slice_perc_split2)
-                amount_training_data_split3.append(temp_slice_perc_split3)
-                amount_training_data_split4.append(temp_slice_perc_split4)
-
-amount_training_data_York = [amount_training_data_split1, amount_training_data_split2, amount_training_data_split3, amount_training_data_split4]
-"""
-amount_training_data: array where x: splits, y: person_percentage, z: slice_percentage
-for example : amount_training_data_ACDC[0][0][0] is for split 1, 0,25% for person and slice percentage
-"""
-something = 0
-
-np.save('amount_training_data_ACDC', amount_training_data_York)

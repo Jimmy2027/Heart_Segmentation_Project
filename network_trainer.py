@@ -17,14 +17,14 @@ import keras.preprocessing as kp
 import tensorflow as tf
 
 testing = True
-data_augm = False
+data_augm = True
 
 if testing == True:
     whichlosses = ['binary_crossentropy']
     whichdatasets = ['ACDC']
     whichmodels = ['twolayernetwork']
     seeds = [1]
-    pers_percs = [0.25]
+    pers_percs = [1]
     slice_percs = [0.25]
     batch_size = 1
     epochs = 1
@@ -35,8 +35,8 @@ if testing == True:
     width_shift_range = 0
     height_shift_range = 0
     zoom_range = 0
-    horizontal_flip = False
-    vertical_flip = True
+    horizontal_flip = True
+    vertical_flip = False
     data_gen_args = dict(rotation_range=rotation_range,
                          width_shift_range=width_shift_range,
                          height_shift_range=height_shift_range,
@@ -158,9 +158,13 @@ for whichdataset in whichdatasets:
                     if layers > 6:
                         batch_size = batch_size//4
                     for perc_index, perc in enumerate(pers_percs):
-                        if perc != 1 and testing == False:
-                            slice_percs = [1]
+                        if testing == False:
+                            if perc != 1:
+                                slice_percs = [1]
+                            else: slice_percs = [0.25, 0.5, 0.75, 1]
+
                         for slice_perc in slice_percs:
+
                             for split_number in seeds:
                                 random.seed(split_number)
                                 np.random.seed(split_number)
@@ -291,7 +295,7 @@ for whichdataset in whichdatasets:
                                         if zoom_range != 0:
                                             x_augm_save_dir = os.path.join('visualisation', whichdataset,
                                                                            'augmented_data', 'x_train',
-                                                                           'heigth_shift')
+                                                                           'zoom')
                                             y_augm_save_dir = os.path.join('visualisation', whichdataset,
                                                                            'augmented_data', 'y_train',
                                                                            'zoom')
