@@ -16,7 +16,7 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
-testing = False
+testing = True
 data_augm = False
 
 if testing == True:
@@ -27,15 +27,22 @@ if testing == True:
     pers_percs = [0.25]
     slice_percs = [0.25]
     batch_size = 1
-    epochs = 5
+    epochs = 1
     """
     Data augmentation parameters:
     """
-    rotation_range = 20
+    rotation_range = 0
     width_shift_range = 0
     height_shift_range = 0
+    zoom_range = 0
     horizontal_flip = False
-    vertical_flip = False
+    vertical_flip = True
+    data_gen_args = dict(rotation_range=rotation_range,
+                         width_shift_range=width_shift_range,
+                         height_shift_range=height_shift_range,
+                         zoom_range=zoom_range,
+                         horizontal_flip = horizontal_flip,
+                         vertical_flip = vertical_flip)
 
 
 else :
@@ -57,7 +64,6 @@ else :
     vertical_flip = True
 
 #TODO write val loss every epoch in txt file
-
 
 
 
@@ -249,32 +255,75 @@ for whichdataset in whichdatasets:
                                     os.makedirs(path + '/' + whichmodel +'/' + whichloss +'/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split')
 
                                 save_dir = path + '/' + whichmodel + '/' + whichloss + '/' + str(pers_percs[perc_index]) + 'patients/' + '/' + str(slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
+
                                 if data_augm==True:
-                                    datagen = kp.image.ImageDataGenerator(
-                                        rotation_range=rotation_range,
-                                        width_shift_range=width_shift_range,
-                                        height_shift_range=height_shift_range,
-                                        horizontal_flip=horizontal_flip, vertical_flip=vertical_flip)
+                                    image_datagen = kp.image.ImageDataGenerator(**data_gen_args)
+                                    mask_datagen = kp.image.ImageDataGenerator(**data_gen_args)
                                     # compute quantities required for featurewise normalization
                                     # (std, mean, and principal components if ZCA whitening is applied)
-                                    datagen.fit(x_train)
-                                    datagen.fit(y_train)
-                                if data_augm == True:
-                                    if rotation_range != 0:
-                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
-                                                                     'rotation')
-                                    if width_shift_range != 0:
-                                        augm_save_dir = os.path.join('visualisation', whichdataset,
-                                                                     'augmented_data', 'width_shift')
-                                    if height_shift_range != 0:
-                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
-                                                                     'heigth_shift')
-                                    if horizontal_flip == True:
-                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
-                                                                     'horizontal_flip')
-                                    if vertical_flip == True:
-                                        augm_save_dir = os.path.join('visualisation', whichdataset, 'augmented_data',
-                                                                     'vertical_flip')
+                                    seed = 1
+                                    image_datagen.fit(x_train, augment=True, seed=seed)
+                                    mask_datagen.fit(y_train, augment=True, seed=seed)
+
+                                    if data_augm == True:
+                                        if rotation_range != 0:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train',
+                                                                           'rotation')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train',
+                                                                           'rotation')
+                                            save_prefix = str(rotation_range)
+                                        if width_shift_range != 0:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train', 'width_shift')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train', 'width_shift')
+                                            save_prefix = str(width_shift_range)
+                                        if height_shift_range != 0:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train',
+                                                                           'heigth_shift')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train',
+                                                                           'heigth_shift')
+                                            save_prefix = str(height_shift_range)
+                                        if zoom_range != 0:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train',
+                                                                           'heigth_shift')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train',
+                                                                           'zoom')
+                                            save_prefix = str(zoom_range)
+                                        if horizontal_flip == True:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train',
+                                                                           'horizontal_flip')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train',
+                                                                           'horizontal_flip')
+                                            save_prefix = ''
+                                        if vertical_flip == True:
+                                            x_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'x_train',
+                                                                           'vertical_flip')
+                                            y_augm_save_dir = os.path.join('visualisation', whichdataset,
+                                                                           'augmented_data', 'y_train',
+                                                                           'vertical_flip')
+                                            save_prefix = ''
+
+                                    image_generator = image_datagen.flow(
+                                        x_train,
+                                        seed=seed,
+                                        save_to_dir=x_augm_save_dir, save_prefix = save_prefix)
+
+                                    mask_generator = mask_datagen.flow(
+                                        y_train,
+                                        seed=seed,
+                                        save_to_dir=y_augm_save_dir, save_prefix = save_prefix)
+
+                                    train_generator = zip(image_generator, mask_generator)
 
                                 if whichmodel == 'param_unet' or whichmodel == 'unet':
 
@@ -284,8 +333,9 @@ for whichdataset in whichdatasets:
 
 
                                     if data_augm ==True:
-                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=32), epochs=epochs, callbacks= early_stopping, validation_data=(x_val,y_val), batch_size =batch_size, verbose= 1)
-                                    else: history = model.fit(x_train, y_train, epochs=epochs, callbacks=early_stopping, validation_data=(x_val, y_val), batch_size = batch_size)
+                                        history = model.fit_generator(train_generator, epochs=epochs, callbacks= early_stopping, validation_data=(x_val,y_val), batch_size =batch_size, verbose= 1)
+                                    else: history = model.fit(x_train, y_train, epochs=epochs, callbacks= [early_stopping], validation_data=(x_val, y_val), batch_size = batch_size, verbose=1)
+
                                 else:
                                     model.summary()
                                     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=30, verbose=1, mode='auto',
@@ -298,8 +348,8 @@ for whichdataset in whichdatasets:
                                         model.compile(loss='binary_crossentropy',
                                                       optimizer='adam',
                                                       metrics=['accuracy'])
-
-                                        history = model.fit_generator(datagen.flow(x_train, y_train, batch_size=batch_size, save_to_dir=augm_save_dir), steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping] )
+                                    if data_augm == True:
+                                        history = model.fit_generator(train_generator, steps_per_epoch=len(x_train) / 32, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping])
                                     else:
                                         history = model.fit(x_train, y_train, validation_data=(x_val,y_val), epochs=epochs, verbose=1, callbacks=[early_stopping], batch_size = batch_size)
 
@@ -307,7 +357,7 @@ for whichdataset in whichdatasets:
 
 
 
-                                model.save(save_dir + '/model'+ str(history.epoch.length)+ '.hdf5')
+                                model.save(save_dir + '/model'+ str(len(history.epoch))+ '.hdf5')
                                 print(history.history.keys())
 
 
@@ -367,6 +417,7 @@ for whichdataset in whichdatasets:
                                     "median_nonthr_hausdorff": "median_nonthr_hausdorff",
                                     "thresholded_hausdorff": "thresholded_hausdorff",
                                 "median_thresholded_hausdorff": "median_thresholded_hausdorff",
+                                    'num_gen_img': len(history.epoch) * len(x_test) / 32,
                                 "slice_perc": slice_perc
 
                                 }

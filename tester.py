@@ -361,7 +361,7 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     slice_percs = [1]
     basepath = whichdataset +'_results/'
     losses = ['binary_crossentropy']
-    pers_percs = [0.25, 0.5]
+    pers_percs = [0.25, 0.5, 0.75]
     splits = [1,2,3,4]
     for loss in losses:
 
@@ -427,7 +427,7 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer))
+    ax.set_title('Dice scores for ' + whichdataset + ' dataset against percentage of patients using ' + whichmodel + str(layer))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
     ax.legend(loc = 2)
@@ -477,6 +477,6 @@ def save_plts():
 
 if __name__ == '__main__':
     save_plts()
-    get_plot('York', 'param_unet')
+    # get_plot('York', 'param_unet')
 
 something = 0
