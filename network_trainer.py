@@ -16,8 +16,8 @@ import keras
 import keras.preprocessing as kp
 import tensorflow as tf
 
-testing = True
-data_augm = True
+testing = False
+data_augm = False
 
 if testing == True:
     whichlosses = ['binary_crossentropy']
@@ -147,7 +147,7 @@ for whichdataset in whichdatasets:
         for split in splits:
             for whichmodel in whichmodels:
                 if whichmodel == 'param_unet':
-                    layers_arr = [4 ,5 ,6, 7]
+                    layers_arr = [5 ,6, 7]
                     # layers_arr = [2]
 
                 else:

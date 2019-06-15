@@ -271,13 +271,20 @@ def get_plot(whichdataset, whichmodel):
 
     basepath = whichdataset +'_results/'
     loss = 'binary_crossentropy'
-    pers_percs = [0.25, 0.5]
+    pers_percs = [0.25, 0.5, 0.75, 1]
     slice_percs = [0.25, 0.5, 0.75, 1]
     splits = [1,2,3,4]
-    layers = [4]
+    layers = [1]
 
 
-
+    pers025 = []
+    pers05 = []
+    pers075 = []
+    pers1 = []
+    std025 = []
+    std05 = []
+    std075 = []
+    std1 = []
     dices025 = []
     dices05 = []
     dices075 = []
@@ -290,18 +297,30 @@ def get_plot(whichdataset, whichmodel):
         for pers_perc in pers_percs:
             for slice_perc in slice_percs:
                 for split in splits:
-                    if pers_perc == 0.25:
+                    if slice_perc == 0.25:
                         dices025.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
                         dices025_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 0.5:
+                    if slice_perc == 0.5:
                         dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
                         dices05_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 0.75:
+                    if slice_perc == 0.75:
                         dices075.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
                         dices075_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 1:
+                    if slice_perc == 1:
                         dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
                         dices1_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+            if pers_perc == 0.25:
+                pers025.append([dices025, dices05, dices075, dices1])
+                std025.append([dices025_std,dices05_std, dices075_std, dices1_std])
+            if pers_perc == 0.5:
+                pers05.append([dices025, dices05, dices075, dices1])
+                std05.append([dices025_std,dices05_std, dices075_std, dices1_std])
+            if pers_perc == 0.75:
+                pers075.append([dices025, dices05, dices075, dices1])
+                std075.append([dices025_std,dices05_std, dices075_std, dices1_std])
+            if pers_perc == 1:
+                pers1.append([dices025, dices05, dices075, dices1])
+                std1.append([dices025_std,dices05_std, dices075_std, dices1_std])
 
 
 
@@ -476,7 +495,7 @@ def save_plts():
 
 
 if __name__ == '__main__':
-    save_plts()
-    # get_plot('York', 'param_unet')
+    # save_plts()
+    get_plot('York', 'twolayernetwork')
 
 something = 0
