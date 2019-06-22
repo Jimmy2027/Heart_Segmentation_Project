@@ -21,7 +21,7 @@ from email_notification import NotificationSystem
 notification_system = NotificationSystem()
 title = 'testing_mail'
 
-testing = True
+testing = False
 data_augm = False
 
 if testing == True:
@@ -501,6 +501,6 @@ print(' BEST thresholded MEDIAN DICE SCORE:', all_results[best_idx]["median_thre
           'number of patients,', 'epochs = ',
           all_results[best_idx]["epochs"])
 
-body = ' BEST MEDIAN DICE SCORE:' + all_results[best_idx]["median_dice_score"]+ 'with' + all_results[best_idx]["number_of_patients"]+ 'number of patients,' + 'epochs = '+ all_results[best_idx]["epochs"] + '\n' + ' BEST thresholded MEDIAN DICE SCORE:' + all_results[best_idx]["median_thresholded_dice"] +'with'+ all_results[best_idx]["number_of_patients"]+'number of patients,'+ 'epochs = '+all_results[best_idx]["epochs"]
+body = ' BEST MEDIAN DICE SCORE:' + str(all_results[best_idx]["median_dice_score"])+ 'with' + str(all_results[best_idx]["number_of_patients"])+ 'number of patients,' + 'epochs = '+ str(all_results[best_idx]["epochs"]) + '\n' + ' BEST thresholded MEDIAN DICE SCORE:' + str(all_results[best_idx]["median_thresholded_dice"]) +'with'+ str(all_results[best_idx]["number_of_patients"])+'number of patients,'+ 'epochs = '+str(all_results[best_idx]["epochs"])
 
 notification_system.send_message(title, body)
