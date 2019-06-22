@@ -15,8 +15,13 @@ from medpy.metric.binary import dc, hd
 import keras
 import keras.preprocessing as kp
 import tensorflow as tf
+from email_notification import NotificationSystem
 
-testing = False
+
+notification_system = NotificationSystem()
+title = 'testing_mail'
+
+testing = True
 data_augm = False
 
 if testing == True:
@@ -24,7 +29,7 @@ if testing == True:
     whichdatasets = ['ACDC']
     whichmodels = ['twolayernetwork']
     seeds = [1]
-    pers_percs = [1]
+    pers_percs = [0.25]
     slice_percs = [0.25]
     batch_size = 1
     epochs = 1
@@ -192,7 +197,7 @@ for whichdataset in whichdatasets:
 
                                 print("****************************************************************************************************************")
                                 print("EXPERIMENT:", layers, "layers,", perc * 100, "% total data,", slice_perc * 100, "% per pat,",
-                                      whichloss, " as loss function,", "seed", split_number)
+                                      whichloss, " as loss function,", "seed", split_number, 'on', whichdataset)
                                 print("TRAIN DATA SIZE", x_train.shape[0])
                                 print("VALIDATION DATA SIZE", x_val.shape[0])
                                 # print("TEST DATA SIZE", x_test.shape[0])
@@ -495,3 +500,7 @@ best_idx = np.argmax([dict["median_thresholded_dice"] for dict in all_results])
 print(' BEST thresholded MEDIAN DICE SCORE:', all_results[best_idx]["median_thresholded_dice"], 'with', all_results[best_idx]["number_of_patients"],
           'number of patients,', 'epochs = ',
           all_results[best_idx]["epochs"])
+
+body = ' BEST MEDIAN DICE SCORE:' + all_results[best_idx]["median_dice_score"]+ 'with' + all_results[best_idx]["number_of_patients"]+ 'number of patients,' + 'epochs = '+ all_results[best_idx]["epochs"] + '\n' + ' BEST thresholded MEDIAN DICE SCORE:' + all_results[best_idx]["median_thresholded_dice"] +'with'+ all_results[best_idx]["number_of_patients"]+'number of patients,'+ 'epochs = '+all_results[best_idx]["epochs"]
+
+notification_system.send_message(title, body)

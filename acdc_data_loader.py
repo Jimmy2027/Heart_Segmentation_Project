@@ -1,10 +1,7 @@
 """
 TODO:
-    - create own callback to plot images : https://keras.io/callbacks/
-    - tensorboard
-    - thresholded dice score
-    - hausdorf distance
-    - visualize splits
+    - make ALL plots (with fake data), also with Hausdorf distance
+    - write about dice score cite all papers taht use it + why we use without square
 
 """
 import numpy as np
