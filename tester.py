@@ -49,13 +49,20 @@ def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split)
     for i in range(len(y_test)):
         output.append(np.squeeze(y_pred[i]))
         for s in range(y_test[i].shape[0]):
-            dice_threshold.append(dc(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
+            if np.max(np.where(output[i][s] > threshold, 1, 0)) != 0:
+                dice_threshold.append(dc(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
 
-    median_thrdice_score = np.median(dice_threshold)
-    avr_thrdicesocre = np.average(dice_threshold)
-    std = np.std(dice_threshold)
+    if dice_threshold:
+        median_thrdice_score = np.median(dice_threshold)
+        avr_thrdicesocre = np.average(dice_threshold)
+        std = np.std(dice_threshold)
+        faulty = False
+    else:
+        faulty = True
+        median_thrdice_score = 0
+        std = 0
 
-    return median_thrdice_score, std
+    return median_thrdice_score, std, faulty
 
 def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split):
     """
@@ -84,13 +91,20 @@ def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split)
         output.append(np.squeeze(y_pred[i]))
         for s in range(y_test[i].shape[0]):
             if np.max(np.where(output[i][s] > threshold, 1, 0)) != 0:
-                thresholded_hausdorff.append(hd(np.where(output[i][s] > threshold, 1, 0), y_test[i][s]))
+                hausdorff = hd(np.where(output[i][s] > threshold, 1, 0), y_test[i][s])
+                thresholded_hausdorff.append(hausdorff)
 
+    if thresholded_hausdorff:
+        median_hausd_dist = np.median(thresholded_hausdorff)
+        print(median_hausd_dist)
+        std = np.std(thresholded_hausdorff)
+        faulty =False
+    else:
+        faulty = True
+        median_hausd_dist = 0
+        std = 0
 
-    median_hausd_dist = np.median(thresholded_hausdorff)
-    std = np.std(thresholded_hausdorff)
-
-    return median_hausd_dist, std
+    return median_hausd_dist, std, faulty
 
 def find_results(path, results):
     for folder in os.listdir(path):
@@ -117,7 +131,7 @@ def print_best_scores(whitchdataset):
 
     results = find_results(basepath, results)
     best_dice_idx = np.argmax([dict["median_thresholded_dice"] for dict in results])
-    best_roc_idx = np.argmax([dict["median_ROC_AUC"] for dict in results])
+    best_roc_idx = np.argmin([dict["median_thresholded_hausdorff"] for dict in results])
 
 
 
@@ -195,7 +209,10 @@ def scatterplot_thrdice_vs_datapercs_vs_model(whichloss):
 
 def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     basepath = which_dataset + '_results/'
-    datapercs = [0.25, 0.5, 0.75, 1]
+    loss = whichloss
+    pers_percs = [0.25, 0.5, 0.75, 1]
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1, 2, 3, 4]
     networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet', 'segnetwork']
     layers = [2,3,4,5,1]
     rects = np.empty((2, len(networks)))
@@ -208,26 +225,44 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
         dices05 = []
         dices075 = []
         dices1 = []
+        dices025_std = []
+        dices05_std = []
+        dices075_std = []
+        dices1_std = []
+        for layer in layers:
+            for pers_perc in pers_percs:
+                for slice_perc in slice_percs:
+                    for split in splits:
+                        dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc,layer,split)
+                        if faulty_dice == False:
+                            if pers_perc == 0.25:
+                                dices025.append(
+                                    dice_score)
+                                dices025_std.append(
+                                    std_dice)
+                            if pers_perc == 0.5:
+                                dices05.append(dice_score)
+                                dices05_std.append(
+                                    std_dice)
+                            if pers_perc == 0.75:
+                                dices075.append(
+                                    dice_score)
+                                dices075_std.append(
+                                    std_dice)
+                            if pers_perc == 1:
+                                dices1.append(dice_score)
+                                dices1_std.append(
+                                    std_dice)
 
-        for dict in results:
-            if dict["model"] == whichmodel and dict["unet_layers"] == layers[counter] and dict["loss"] == whichloss:
-                if dict["number_of_patients"] == datapercs[0]:
-                    dices025.append(dict["median_thresholded_dice"])
-                if dict["number_of_patients"] == datapercs[1]:
-                    dices05.append(dict["median_thresholded_dice"])
-                if dict["number_of_patients"] == datapercs[2]:
-                    dices075.append(dict["median_thresholded_dice"])
-                if dict["number_of_patients"] == datapercs[3]:
-                    dices1.append(dict["median_thresholded_dice"])
-
-                med_dice025 = round(np.median(dices025), 2)
-                std_dice025 = round(np.std(dices025), 2)
-                med_dice05 = round(np.median(dices05), 2)
-                std_dice05 = round(np.std(dices05), 2)
-                med_dice075 = round(np.mean(dices075), 2)
-                std_dice075 = round(np.std(dices075), 2)
-                med_dice1 = round(np.mean(dices1), 2)
-                std_dice1 = round(np.std(dices1), 2)
+                rounding_num = 2
+                med_dice025 = round(np.median(dices025), rounding_num)
+                std_dice025 = round(np.median(dices025_std), rounding_num)
+                med_dice05 = round(np.median(dices05), rounding_num)
+                std_dice05 = round(np.median(dices05_std), rounding_num)
+                med_dice075 = round(np.mean(dices075), rounding_num)
+                std_dice075 = round(np.median(dices075_std), rounding_num)
+                med_dice1 = round(np.mean(dices1), rounding_num)
+                std_dice1 = round(np.median(dices1_std), rounding_num)
 
                 med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
 
@@ -296,7 +331,93 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     plt.show()
 
 
-def get_plot(whichdataset, whichmodel, layer):
+def scatter_pers_vs_slice(whichdataset, whichmodel, layer):
+    basepath = whichdataset + '_results/'
+    loss = 'binary_crossentropy'
+    pers_percs = [0.25, 0.5, 0.75, 1]
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1, 2, 3, 4]
+    layers = [1]
+
+    dices025 = []
+    dices05 = []
+    dices075 = []
+    dices1 = []
+    dices025_std = []
+    dices05_std = []
+    dices075_std = []
+    dices1_std = []
+
+    for pers_perc in pers_percs:
+        slice025 = []
+        slice05 = []
+        slice075 = []
+        slice1 = []
+        slice025_std = []
+        slice05_std = []
+        slice075_std = []
+        slice1_std = []
+
+
+
+        for slice_perc in slice_percs:
+            for split in splits:
+                dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer,
+                                                                       split)
+                hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc,
+                                                                           layer, split)
+                assert faulty_dice != faulty_haus, 'faulty_dice != faulty_haus'
+                if faulty_dice == False:
+                    if pers_perc == 1:
+                        if slice_perc == 0.25:
+                            slice025.append(dice_score)
+                            slice025_std.append(std_dice)
+                        if slice_perc == 0.5:
+                            slice05.append(dice_score)
+                            slice05_std.append(std_dice)
+                        if slice_perc == 0.75:
+                            slice075.append(dice_score)
+                            slice075_std.append(std_dice)
+                        if slice_perc == 1:
+                            slice1.append(dice_score)
+                            slice1_std.append(std_dice)
+                        if slice_perc == 1:
+                            if pers_perc == 0.25:
+                                dices025.append(
+                                    dice_score)
+                                dices025_std.append(
+                                    std_dice)
+                            if pers_perc == 0.5:
+                                dices05.append(dice_score)
+                                dices05_std.append(
+                                    std_dice)
+                            if pers_perc == 0.75:
+                                dices075.append(
+                                    dice_score)
+                                dices075_std.append(
+                                    std_dice)
+                            if pers_perc == 1:
+                                dices1.append(dice_score)
+                                dices1_std.append(
+                                    std_dice)
+    rounding_num = 2
+    med_dice025 = round(np.median(dices025), rounding_num)
+    std_dice025 = round(np.median(dices025_std), rounding_num)
+    med_dice05 = round(np.median(dices05), rounding_num)
+    std_dice05 = round(np.median(dices05_std), rounding_num)
+    med_dice075 = round(np.mean(dices075), rounding_num)
+    std_dice075 = round(np.median(dices075_std), rounding_num)
+    med_dice1 = round(np.mean(dices1), rounding_num)
+    std_dice1 = round(np.median(dices1_std), rounding_num)
+
+    bincross_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+    bincross_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+
+    # medians = [pers025, pers05, pers075, pers1]
+    # stds = [std025, std05, std075, std1]
+
+
+def plot_dice_vs_pers_slice(whichdataset, whichmodel, layer):
     """
     Plots the dice scores of one model for different person percentages and different slice percentages
     :param whichdataset:
@@ -332,18 +453,24 @@ def get_plot(whichdataset, whichmodel, layer):
         dices1_std = []
         for slice_perc in slice_percs:
             for split in splits:
-                if slice_perc == 0.25:
-                    dices025.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                    dices025_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                if slice_perc == 0.5:
-                    dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                    dices05_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                if slice_perc == 0.75:
-                    dices075.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                    dices075_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                if slice_perc == 1:
-                    dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                    dices1_std.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer,
+                                                                       split)
+                hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc,
+                                                                           layer, split)
+                assert faulty_dice != faulty_haus, 'faulty_dice != faulty_haus'
+                if faulty_dice == False:
+                    if slice_perc == 0.25:
+                        dices025.append(dice_score)
+                        dices025_std.append(std_dice)
+                    if slice_perc == 0.5:
+                        dices05.append(dice_score)
+                        dices05_std.append(std_dice)
+                    if slice_perc == 0.75:
+                        dices075.append(dice_score)
+                        dices075_std.append(std_dice)
+                    if slice_perc == 1:
+                        dices1.append(dice_score)
+                        dices1_std.append(std_dice)
         if pers_perc == 0.25:
             pers025.append([np.median(dices025), np.median(dices05), np.median(dices075), np.median(dices1)])
             std025.append([np.median(dices025_std),np.median(dices05_std), np.median(dices075_std), np.median(dices1_std)])
@@ -430,24 +557,28 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):       
         for pers_perc in pers_percs:
             for slice_perc in slice_percs:
                 for split in splits:
-                    if pers_perc == 0.25:
-                        dices025.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices025_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 0.5:
-                        dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices05_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 0.75:
-                        dices075.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices075_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 1:
-                        dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices1_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)
+                    hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)
+                    assert faulty_dice != faulty_haus, 'faulty_dice != faulty_haus'
+                    if faulty_dice == False:
+                        if pers_perc == 0.25:
+                            dices025.append(
+                                dice_score)
+                            dices025_std.append(
+                                std_dice)
+                        if pers_perc == 0.5:
+                            dices05.append(dice_score)
+                            dices05_std.append(
+                                std_dice)
+                        if pers_perc == 0.75:
+                            dices075.append(
+                                dice_score)
+                            dices075_std.append(
+                                std_dice)
+                        if pers_perc == 1:
+                            dices1.append(dice_score)
+                            dices1_std.append(
+                                std_dice)
 
             rounding_num = 2
             med_dice025 = round(np.median(dices025), rounding_num)
@@ -548,41 +679,45 @@ def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer
         for pers_perc in pers_percs:
             for slice_perc in slice_percs:
                 for split in splits:
-                    if pers_perc == 0.25:
-                        dices025.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices025_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                        hausd025.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        hausd025_std.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                    dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)
+                    hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)
+                    assert faulty_dice == faulty_haus, 'faulty_dice != faulty_haus'
+                    if faulty_dice == False:
+                        if pers_perc == 0.25:
+                            dices025.append(
+                                dice_score)
+                            dices025_std.append(
+                                std_dice)
+                            hausd025.append(
+                                hausdorff_dist)
+                            hausd025_std.append(
+                                std_haus)
 
-                    if pers_perc == 0.5:
-                        dices05.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices05_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                        hausd05.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        hausd05_std.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 0.75:
-                        dices075.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices075_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                        hausd075.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        hausd075_std.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                    if pers_perc == 1:
-                        dices1.append(compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        dices1_std.append(
-                            compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
-                        hausd1.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[0])
-                        hausd1_std.append(
-                            compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)[1])
+                        if pers_perc == 0.5:
+                            dices05.append(dice_score)
+                            dices05_std.append(
+                                std_dice)
+                            hausd05.append(
+                                hausdorff_dist)
+                            hausd05_std.append(
+                                std_haus)
+                        if pers_perc == 0.75:
+                            dices075.append(
+                                dice_score)
+                            dices075_std.append(
+                                std_dice)
+                            hausd075.append(
+                                hausdorff_dist)
+                            hausd075_std.append(
+                                std_haus)
+                        if pers_perc == 1:
+                            dices1.append(dice_score)
+                            dices1_std.append(
+                                std_dice)
+                            hausd1.append(
+                                hausdorff_dist)
+                            hausd1_std.append(
+                                std_haus)
 
             rounding_num = 3
             med_dice025 = round(np.median(dices025), rounding_num)
@@ -675,6 +810,9 @@ def save_plts():
 
 if __name__ == '__main__':
     # save_plts()
-    get_plot('York', 'param_unet', 4)
+    # plot_thrdice_andHausd_vs_datapercs_for_model('York', 'param_unet', 4)
+    # plot_dice_vs_pers_slice('York', 'param_unet', 4)
+    # scatter_pers_vs_slice('York', 'param_unet', 4)
+    plot_thrdice_vs_datapercs('binary_crossentropy', 'York')
 
 something = 0

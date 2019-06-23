@@ -25,9 +25,9 @@ testing = False
 data_augm = False
 
 if testing == True:
-    whichlosses = ['binary_crossentropy']
+    whichlosses = ['dice']
     whichdatasets = ['ACDC']
-    whichmodels = ['twolayernetwork']
+    whichmodels = ['segnetwork']
     seeds = [1]
     pers_percs = [0.25]
     slice_percs = [0.25]
@@ -53,7 +53,7 @@ if testing == True:
 else :
     whichlosses = ['binary_crossentropy']
     whichdatasets = ['York', 'ACDC']
-    whichmodels = ['param_unet']
+    whichmodels = ['segnetwork']
     seeds = [1, 2, 3, 4]  # for reproducibility
     pers_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
     slice_percs = [0.25, 0.5, 0.75, 1]
@@ -503,4 +503,4 @@ print(' BEST thresholded MEDIAN DICE SCORE:', all_results[best_idx]["median_thre
 
 body = ' BEST MEDIAN DICE SCORE:' + str(all_results[best_idx]["median_dice_score"])+ 'with' + str(all_results[best_idx]["number_of_patients"])+ 'number of patients,' + 'epochs = '+ str(all_results[best_idx]["epochs"]) + '\n' + ' BEST thresholded MEDIAN DICE SCORE:' + str(all_results[best_idx]["median_thresholded_dice"]) +'with'+ str(all_results[best_idx]["number_of_patients"])+'number of patients,'+ 'epochs = '+str(all_results[best_idx]["epochs"])
 
-notification_system.send_message(title, body)
+# notification_system.send_message(title, body)
