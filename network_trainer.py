@@ -420,7 +420,10 @@ for data_gen_args in data_gen_argss:
 
 
                                         if data_augm ==True:
-                                            history = model.fit_generator(train_generator, epochs=epochs, callbacks= early_stopping, validation_data=(x_val,y_val), batch_size =batch_size, verbose= 1)
+                                            history = model.fit_generator(train_generator,
+                                                                          steps_per_epoch=len(x_train) / 32,
+                                                                          validation_data=(x_val, y_val), epochs=epochs,
+                                                                          verbose=1, callbacks=[early_stopping])
                                         else: history = model.fit(x_train, y_train, epochs=epochs, callbacks= [early_stopping], validation_data=(x_val, y_val), batch_size = batch_size, verbose=1)
 
                                     else:
