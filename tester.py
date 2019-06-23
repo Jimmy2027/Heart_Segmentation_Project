@@ -23,7 +23,7 @@ def read_dice_score(model, lossfunction, patients, layers, split):
 
 
 
-def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split):
+def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split, whichdataset):
     """
     Computes the median dice scor for a split and the std
     :param model:
@@ -34,7 +34,7 @@ def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split)
     :param split:
     :return:
     """
-
+    basepath = whichdataset + '_results'
 
     for folder in os.listdir(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(slice_perc)+'slices',str(layers) + 'layers', str(split) + 'split')):
         if folder.endswith('y_pred.npy'):
@@ -64,7 +64,7 @@ def compute_dice_score(model, lossfunction, patients, slice_perc, layers, split)
 
     return median_thrdice_score, std, faulty
 
-def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split):
+def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split, whichdataset):
     """
     Computes the median hausdorff distance for a split and the std
     :param model:
@@ -76,6 +76,7 @@ def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split)
     :return:
     """
 
+    basepath = whichdataset + '_results'
 
     for folder in os.listdir(os.path.join(basepath, model, lossfunction, str(patients) + 'patients', str(slice_perc)+'slices',str(layers) + 'layers', str(split) + 'split')):
         if folder.endswith('y_pred.npy'):
@@ -96,7 +97,6 @@ def compute_hausd_dist(model, lossfunction, patients, slice_perc, layers, split)
 
     if thresholded_hausdorff:
         median_hausd_dist = np.median(thresholded_hausdorff)
-        print(median_hausd_dist)
         std = np.std(thresholded_hausdorff)
         faulty =False
     else:
@@ -208,19 +208,26 @@ def scatterplot_thrdice_vs_datapercs_vs_model(whichloss):
     plt.show()
 
 def plot_thrdice_vs_datapercs(whichloss, which_dataset):
+    """
+    Plots the dice score against the data percentages for all models
+    :param whichloss:
+    :param which_dataset:
+    :return:
+    """
     basepath = which_dataset + '_results/'
     loss = whichloss
     pers_percs = [0.25, 0.5, 0.75, 1]
     slice_percs = [0.25, 0.5, 0.75, 1]
     splits = [1, 2, 3, 4]
-    networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet', 'segnetwork']
-    layers = [2,3,4,5,1]
+    # networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet', 'segnetwork']
+    networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet']
+    layers = [2,3,4,5]
+    # layers = [2,3,4,5,1]
     rects = np.empty((2, len(networks)))
     med_dices_list = []
     std_dices_list = []
     for counter, whichmodel in enumerate(networks):
         results = []
-        results = find_results(basepath, results)
         dices025 = []
         dices05 = []
         dices075 = []
@@ -229,11 +236,11 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
         dices05_std = []
         dices075_std = []
         dices1_std = []
-        for layer in layers:
-            for pers_perc in pers_percs:
-                for slice_perc in slice_percs:
+        for pers_perc in pers_percs:
+            for slice_perc in slice_percs:
+                if slice_perc == 1:
                     for split in splits:
-                        dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc,layer,split)
+                        dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc,layers[counter],split, which_dataset)
                         if faulty_dice == False:
                             if pers_perc == 0.25:
                                 dices025.append(
@@ -274,61 +281,200 @@ def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     ind = np.arange(len(med_dices))  # the x locations for the groups
     width = 0.2  # the width of the bars
     fig, ax = plt.subplots()
+    ax.yaxis.grid(True)
 
-    rects0 = ax.bar(ind - width/2, med_dices_list[0], width, yerr=std_dices_list[0],
-                        label=networks[0]+'2')
-    rects1 = ax.bar(ind + width/2, med_dices_list[1], width, yerr=std_dices_list[1],
-                    label=networks[1] + '3')
-    rects2 = ax.bar(ind - width, med_dices_list[2], width, yerr=std_dices_list[2],
-                    label=networks[2]+'4')
-    rects3 = ax.bar(ind + width, med_dices_list[3], width, yerr=std_dices_list[3],
-                    label=networks[3]+'5')
-    rects4 = ax.bar(ind - 2*width, med_dices_list[4], width, yerr=std_dices_list[4],
-                    label=networks[4])
+
+    rects0 = ax.bar(ind - width * 3 / 2, med_dices_list[0], width, yerr=std_dices_list[0],
+                        label='2 levels')
+    rects1 = ax.bar(ind - width * 1 / 2, med_dices_list[1], width, yerr=std_dices_list[1],
+                    label='3 levels')
+    rects2 = ax.bar(ind + width * 1 / 2, med_dices_list[2], width, yerr=std_dices_list[2],
+                    label='4 levels')
+    rects3 = ax.bar(ind + width * 3 / 2, med_dices_list[3], width, yerr=std_dices_list[3],
+                    label='5 levels')
+    # rects4 = ax.bar(ind - 2*width, med_dices_list[4], width, yerr=std_dices_list[4],
+    #                 label=networks[4])
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores by dataset against percentage of patients for binary_crossentropy')
+    ax.set_axisbelow(True)
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
     ax.legend()
 
-    def autolabel(rects, xpos='center'):
-        """
-        Attach a text label above each bar in *rects*, displaying its height.
+    # def autolabel(rects, xpos='center'):
+    #     """
+    #     Attach a text label above each bar in *rects*, displaying its height.
+    #
+    #     *xpos* indicates which side to place the text w.r.t. the center of
+    #     the bar. It can be one of the following {'center', 'right', 'left'}.
+    #     """
+    #
+    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    #     offset = {'center': 0, 'right': 1, 'left': -1}
+    #
+    #     for rect in rects:
+    #         height = rect.get_height()
+    #         ax.annotate('{}'.format(height),
+    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
+    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
+    #                     textcoords="offset points",  # in both directions
+    #                     ha=ha[xpos], va='bottom')
 
-        *xpos* indicates which side to place the text w.r.t. the center of
-        the bar. It can be one of the following {'center', 'right', 'left'}.
-        """
-
-        ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-        offset = {'center': 0, 'right': 1, 'left': -1}
-
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-                        textcoords="offset points",  # in both directions
-                        ha=ha[xpos], va='bottom')
-
-    autolabel(rects0)
-    autolabel(rects1)
-    autolabel(rects2)
-    autolabel(rects3)
-    autolabel(rects4)
+    # autolabel(rects0)
+    # autolabel(rects1)
+    # autolabel(rects2)
+    # autolabel(rects3)
+    # autolabel(rects4)
 
 
     fig.tight_layout()
     title = ax.set_title("\n".join(wrap(
-        "Dice scores by dataset against percentage of patients for " + whichmodel + ' and ' + whichloss + ' as loss function ',
+        'Dice scores for '+ which_dataset + ' dataset against percentage of patients for ' + whichloss,
         60)))
 
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
+    plt.savefig(basepath + 'dice' +whichloss)
+
     plt.show()
+
+
+def plot_hausdorff_vs_datapercs(whichloss, which_dataset):
+    """
+    Plots the Hausdorff distance against the data percentages for all models
+    :param whichloss:
+    :param which_dataset:
+    :return:
+    """
+    basepath = which_dataset + '_results/'
+    loss = whichloss
+    pers_percs = [0.25, 0.5, 0.75, 1]
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1, 2, 3, 4]
+    # networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet', 'segnetwork']
+    networks = ['param_unet', 'param_unet', 'param_unet', 'param_unet']
+    layers = [2,3,4,5]
+    # layers = [2,3,4,5,1]
+    rects = np.empty((2, len(networks)))
+    med_dices_list = []
+    std_dices_list = []
+    for counter, whichmodel in enumerate(networks):
+        results = []
+        hausd025 = []
+        hausd05 = []
+        hausd075 = []
+        hausd1 = []
+        hausd025_std = []
+        hausd05_std = []
+        hausd075_std = []
+        hausd1_std = []
+        for pers_perc in pers_percs:
+            for slice_perc in slice_percs:
+                if slice_perc == 1:
+                    for split in splits:
+                        dice_score, std_dice, faulty_dice = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc,layers[counter],split, which_dataset)
+                        if faulty_dice == False:
+                            if pers_perc == 0.25:
+                                hausd025.append(
+                                    dice_score)
+                                hausd025_std.append(
+                                    std_dice)
+                            if pers_perc == 0.5:
+                                hausd05.append(dice_score)
+                                hausd05_std.append(
+                                    std_dice)
+                            if pers_perc == 0.75:
+                                hausd075.append(
+                                    dice_score)
+                                hausd075_std.append(
+                                    std_dice)
+                            if pers_perc == 1:
+                                hausd1.append(dice_score)
+                                hausd1_std.append(
+                                    std_dice)
+
+                rounding_num = 2
+                med_dice025 = round(np.median(hausd025), rounding_num)
+                std_dice025 = round(np.median(hausd025_std), rounding_num)
+                med_dice05 = round(np.median(hausd05), rounding_num)
+                std_dice05 = round(np.median(hausd05_std), rounding_num)
+                med_dice075 = round(np.mean(hausd075), rounding_num)
+                std_dice075 = round(np.median(hausd075_std), rounding_num)
+                med_dice1 = round(np.mean(hausd1), rounding_num)
+                std_dice1 = round(np.median(hausd1_std), rounding_num)
+
+                med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
+
+                std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+
+        med_dices_list.append(med_dices)
+        std_dices_list.append(std_dices)
+
+    ind = np.arange(len(med_dices))  # the x locations for the groups
+    width = 0.2  # the width of the bars
+    fig, ax = plt.subplots()
+    ax.set_axisbelow(True)
+
+    rects0 = ax.bar(ind - width * 3 / 2, med_dices_list[0], width, yerr=std_dices_list[0],
+                        label='2 levels')
+    rects1 = ax.bar(ind - width * 1 / 2, med_dices_list[1], width, yerr=std_dices_list[1],
+                    label='3 levels')
+    rects2 = ax.bar(ind + width * 1 / 2, med_dices_list[2], width, yerr=std_dices_list[2],
+                    label='4 levels')
+    rects3 = ax.bar(ind + width * 3 / 2, med_dices_list[3], width, yerr=std_dices_list[3],
+                    label='5 levels')
+    # rects4 = ax.bar(ind - 2*width, med_dices_list[4], width, yerr=std_dices_list[4],
+    #                 label=networks[4])
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_xlabel('Percentage of patients used')
+    ax.set_ylabel('median Hausdorff distances')
+    ax.yaxis.grid(True)
+    ax.set_xticks(ind)
+    ax.set_xticklabels(('25%', '50%', '75%', '100%'))
+    ax.legend()
+
+    # def autolabel(rects, xpos='center'):
+    #     """
+    #     Attach a text label above each bar in *rects*, displaying its height.
+    #
+    #     *xpos* indicates which side to place the text w.r.t. the center of
+    #     the bar. It can be one of the following {'center', 'right', 'left'}.
+    #     """
+    #
+    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    #     offset = {'center': 0, 'right': 1, 'left': -1}
+    #
+    #     for rect in rects:
+    #         height = rect.get_height()
+    #         ax.annotate('{}'.format(height),
+    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
+    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
+    #                     textcoords="offset points",  # in both directions
+    #                     ha=ha[xpos], va='bottom')
+
+    # autolabel(rects0)
+    # autolabel(rects1)
+    # autolabel(rects2)
+    # autolabel(rects3)
+    # autolabel(rects4)
+
+
+    fig.tight_layout()
+    title = ax.set_title("\n".join(wrap(
+        'Hausdorff distances for '+ which_dataset + ' dataset against percentage of patients for ' + whichloss,
+        60)))
+
+    fig.tight_layout()
+    title.set_y(1.05)
+    fig.subplots_adjust(top=0.8)
+    plt.savefig(basepath + 'hausd' +whichloss)
+
+    plt.show()
+
 
 
 def scatter_pers_vs_slice(whichdataset, whichmodel, layer):
@@ -536,7 +682,7 @@ def plot_dice_vs_pers_slice(whichdataset, whichmodel, layer):
 
 
 
-def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):           #TODO plot dice score and hausdorf distance
+def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     slice_percs = [1]
     basepath = whichdataset +'_results/'
     losses = ['binary_crossentropy']
@@ -648,7 +794,7 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):       
 
 
 
-def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer):
+def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer): #deprecated
     slice_percs = [1]
     basepath = whichdataset +'_results/'
     loss= 'binary_crossentropy'
@@ -786,12 +932,11 @@ def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer
     autolabel(rects2, "right")
 
     fig.tight_layout()
-    title = ax.set_title("\n".join(wrap('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
+    title = ax.set_title("\n".join(wrap('Dice scores for ' + whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
 
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(basepath + whichmodel + str(layer))
     plt.show()
 
 
@@ -813,6 +958,10 @@ if __name__ == '__main__':
     # plot_thrdice_andHausd_vs_datapercs_for_model('York', 'param_unet', 4)
     # plot_dice_vs_pers_slice('York', 'param_unet', 4)
     # scatter_pers_vs_slice('York', 'param_unet', 4)
+    # plot_thrdice_vs_datapercs('binary_crossentropy', 'ACDC')
     plot_thrdice_vs_datapercs('binary_crossentropy', 'York')
+    # plot_hausdorff_vs_datapercs('binary_crossentropy', 'ACDC')
+    plot_hausdorff_vs_datapercs('binary_crossentropy', 'York')
+
 
 something = 0
