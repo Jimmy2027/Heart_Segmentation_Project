@@ -19,7 +19,7 @@ from email_notification import NotificationSystem
 
 
 notification_system = NotificationSystem()
-title = 'testing_mail'
+title = 'testing_data_augmentation'
 
 testing = False
 data_augm = True
@@ -42,18 +42,48 @@ if testing == True:
     zoom_range = 0
     horizontal_flip = True
     vertical_flip = False
-    data_gen_args = dict(rotation_range=rotation_range,
-                         width_shift_range=width_shift_range,
-                         height_shift_range=height_shift_range,
-                         zoom_range=zoom_range,
-                         horizontal_flip = horizontal_flip,
-                         vertical_flip = vertical_flip)
+    width_shift_arg = dict(rotation_range=0,
+                           width_shift_range=0.2,
+                           height_shift_range=0,
+                           zoom_range=0,
+                           horizontal_flip=False,
+                           vertical_flip=False)
+    rotation_arg = dict(rotation_range=30,
+                        width_shift_range=0,
+                        height_shift_range=0,
+                        zoom_range=0,
+                        horizontal_flip=False,
+                        vertical_flip=False)
+    height_shift_arg = dict(rotation_range=0,
+                            width_shift_range=0,
+                            height_shift_range=0.2,
+                            zoom_range=0,
+                            horizontal_flip=False,
+                            vertical_flip=False)
+    zoom_arg = dict(rotation_range=0,
+                    width_shift_range=0,
+                    height_shift_range=0,
+                    zoom_range=0.2,
+                    horizontal_flip=False,
+                    vertical_flip=False)
+    horizontal_flip_arg = dict(rotation_range=0,
+                               width_shift_range=0,
+                               height_shift_range=0,
+                               zoom_range=0,
+                               horizontal_flip=True,
+                               vertical_flip=False)
+    vertical_flip_arg = dict(rotation_range=0,
+                             width_shift_range=0,
+                             height_shift_range=0,
+                             zoom_range=0,
+                             horizontal_flip=False,
+                             vertical_flip=True)
 
 
 else :
     whichlosses = ['binary_crossentropy']
     whichdatasets = ['York', 'ACDC']
-    whichmodels = ['segnetwork']
+    whichmodels = ['param_unet']
     seeds = [1, 2, 3, 4]  # for reproducibility
     pers_percs = [0.25, 0.5, 0.75, 1]  # between 0 and 1, not percentages
     slice_percs = [0.25, 0.5, 0.75, 1]
@@ -199,7 +229,7 @@ for data_gen_args in data_gen_argss:
             for split in splits:
                 for whichmodel in whichmodels:
                     if whichmodel == 'param_unet':
-                        layers_arr = [5 ,6, 7]
+                        layers_arr = [5]
                         # layers_arr = [2]
 
                     else:
