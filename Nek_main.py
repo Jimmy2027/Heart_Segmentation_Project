@@ -8,6 +8,11 @@ from keras.backend.tensorflow_backend import clear_session
 from keras.backend.tensorflow_backend import get_session
 import os
 import methods
+from email_notification import NotificationSystem
+
+notification_system = NotificationSystem()
+title = 'testing_data_augmentation'
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import keras
@@ -401,3 +406,6 @@ for whichmodel in whichmodels:
                                     print("AUGMENTED DATA SIZE:", augm_count)
                                     print("****************************************************************************************************************")
 print(times)
+body = title
+if testing ==  False:
+    notification_system.send_message(title, body)
