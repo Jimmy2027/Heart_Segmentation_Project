@@ -682,10 +682,10 @@ def plot_dice_vs_pers_slice(whichdataset, whichmodel, layer):
 
 
 
-def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
+def plot_thrdice_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer):
     slice_percs = [1]
     basepath = whichdataset +'_results/'
-    losses = ['binary_crossentropy']
+    losses = [whichloss]
     pers_percs = [0.25, 0.5, 0.75, 1]
     splits = [1,2,3,4]
     for loss in losses:
@@ -794,10 +794,10 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
 
 
 
-def plot_Hausd_vs_datapercs_for_model(whichdataset, whichmodel, layer): #deprecated
+def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer): #deprecated
     slice_percs = [1]
     basepath = whichdataset +'_results/'
-    loss= 'binary_crossentropy'
+    loss= whichlosss
     scores = ['Dice', 'Hausd']
     pers_percs = [0.25, 0.5, 0.75, 1]
     splits = [1,2,3,4]
@@ -820,7 +820,6 @@ def plot_Hausd_vs_datapercs_for_model(whichdataset, whichmodel, layer): #depreca
                     hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split, whichdataset)
                     if faulty_haus == False:
                         if pers_perc == 0.25:
-
                             hausd025.append(
                                 hausdorff_dist)
                             hausd025_std.append(
@@ -917,15 +916,16 @@ def save_plts():
                 layers = [2,3,4,5]
             else: layers = [1]
             for layer in layers:
-                plot_thrdice_vs_datapercs_for_model(dataset, network, layer)
-                plot_Hausd_vs_datapercs_for_model(dataset, network, layer)
+                plot_thrdice_vs_datapercs_for_model('binary_crossentropy', dataset, network, layer)
+                plot_Hausd_vs_datapercs_for_model('binary_crossentropy', dataset, network, layer)
         plot_thrdice_vs_datapercs('binary_crossentropy', dataset)
         plot_hausdorff_vs_datapercs('binary_crossentropy', dataset)
 
 
 if __name__ == '__main__':
-    save_plts()
-    plot_thrdice_vs_datapercs('binary_crossentropy', 'ACDC')
-    plot_hausdorff_vs_datapercs('binary_crossentropy', 'ACDC')
-
+    # save_plts()
+    # plot_thrdice_vs_datapercs('binary_crossentropy', 'ACDC')
+    # plot_hausdorff_vs_datapercs('binary_crossentropy', 'ACDC')
+    plot_thrdice_vs_datapercs_for_model('dice', 'ACDC', 'segnetwork', 1)
+    plot_Hausd_vs_datapercs_for_model('dice', 'ACDC', 'segnetwork', 1)
 something = 0

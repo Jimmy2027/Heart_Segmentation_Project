@@ -230,7 +230,7 @@ def twolayernetwork(img_shape, kernel_size, Dropout_rate):
     return model
 
 
-if __name__ == '__main__':      #only gets called if Unet.py is run
+if __name__ == '__main__':      #only gets called if models.py is run
 
     model = segnetwork((128,128,1), 3, 0.5)
 
