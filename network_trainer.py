@@ -21,7 +21,7 @@ from email_notification import NotificationSystem
 notification_system = NotificationSystem()
 title = 'testing_data_augmentation'
 
-testing = False
+testing = True
 data_augm = True
 
 if testing == True:
@@ -138,6 +138,7 @@ else :
 
 if data_augm == True:
     data_gen_argss = [width_shift_arg, rotation_arg, height_shift_arg, zoom_arg, horizontal_flip_arg, vertical_flip_arg]
+    folders = ['width_shift', 'rotation_arg', 'height_shift', 'zoom', 'horizontal_flip', 'vertical_flip']
 else: data_gen_argss = [0]
 
 
@@ -150,7 +151,7 @@ threshold = 0.5
 
 all_results = []
 
-for data_gen_args in data_gen_argss:
+for folder , data_gen_args in enumerate(data_gen_argss):
     for whichdataset in whichdatasets:
         for whichloss in whichlosses:
 
@@ -320,9 +321,9 @@ for data_gen_args in data_gen_argss:
 
 
                                     if data_augm == True:
-                                        if not os.path.exists(os.path.join(path, str(data_gen_args))):
-                                            os.makedirs(os.path.join(path, str(data_gen_args)))
-                                            save_dir = os.path.join(path, str(data_gen_args))
+                                        if not os.path.exists(os.path.join(path, folders[folder])):
+                                            os.makedirs(os.path.join(path, folders[folder]))
+                                        save_dir = os.path.join(path, folders[folder])
                                     else:
                                         if not os.path.exists(path):
                                             os.makedirs(path)

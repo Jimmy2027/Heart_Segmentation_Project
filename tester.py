@@ -703,9 +703,8 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
         for pers_perc in pers_percs:
             for slice_perc in slice_percs:
                 for split in splits:
-                    dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)
-                    hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)
-                    assert faulty_dice != faulty_haus, 'faulty_dice != faulty_haus'
+                    dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split, whichdataset)
+                    # hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)
                     if faulty_dice == False:
                         if pers_perc == 0.25:
                             dices025.append(
@@ -748,8 +747,9 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
-                    label='binary_cross')
+    ax.set_axisbelow(True)
+
+    rects1 = ax.bar(ind - width, bincross_med_dices, width, yerr=bincross_std_dices)
     # rects2 = ax.bar(ind + width / 2, dice_med_dices, width, yerr=dice_std_dices,
     #                 label='Dice')
 
@@ -759,28 +759,28 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     ax.set_title('Dice scores for ' + whichdataset + ' dataset against percentage of patients using ' + whichmodel + str(layer))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
-    ax.legend(loc = 2)
+    # ax.legend(loc = 2)
 
-    def autolabel(rects, xpos='center'):
-        """
-        Attach a text label above each bar in *rects*, displaying its height.
+    # def autolabel(rects, xpos='center'):
+    #     """
+    #     Attach a text label above each bar in *rects*, displaying its height.
+    #
+    #     *xpos* indicates which side to place the text w.r.t. the center of
+    #     the bar. It can be one of the following {'center', 'right', 'left'}.
+    #     """
+    #
+    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    #     offset = {'center': 0, 'right': 1, 'left': -1}
+    #
+    #     for rect in rects:
+    #         height = rect.get_height()
+    #         ax.annotate('{}'.format(height),
+    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
+    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
+    #                     textcoords="offset points",  # in both directions
+    #                     ha=ha[xpos], va='bottom')
 
-        *xpos* indicates which side to place the text w.r.t. the center of
-        the bar. It can be one of the following {'center', 'right', 'left'}.
-        """
-
-        ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-        offset = {'center': 0, 'right': 1, 'left': -1}
-
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-                        textcoords="offset points",  # in both directions
-                        ha=ha[xpos], va='bottom')
-
-    autolabel(rects1, "left")
+    # autolabel(rects1, "left")
     # autolabel(rects2, "right")
 
     fig.tight_layout()
@@ -789,12 +789,12 @@ def plot_thrdice_vs_datapercs_for_model(whichdataset, whichmodel, layer):
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(basepath + whichmodel + str(layer))
+    plt.savefig(basepath + whichmodel + str(layer) + 'dice')
     plt.show()
 
 
 
-def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer): #deprecated
+def plot_Hausd_vs_datapercs_for_model(whichdataset, whichmodel, layer): #deprecated
     slice_percs = [1]
     basepath = whichdataset +'_results/'
     loss= 'binary_crossentropy'
@@ -804,14 +804,6 @@ def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer
     for score in scores:
 
 
-        dices025 = []
-        dices05 = []
-        dices075 = []
-        dices1 = []
-        dices025_std = []
-        dices05_std = []
-        dices075_std = []
-        dices1_std = []
 
         hausd025 = []
         hausd05 = []
@@ -825,56 +817,35 @@ def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer
         for pers_perc in pers_percs:
             for slice_perc in slice_percs:
                 for split in splits:
-                    dice_score, std_dice, faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split)
-                    hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split)
-                    assert faulty_dice == faulty_haus, 'faulty_dice != faulty_haus'
-                    if faulty_dice == False:
+                    hausdorff_dist, std_haus, faulty_haus = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc, layer, split, whichdataset)
+                    if faulty_haus == False:
                         if pers_perc == 0.25:
-                            dices025.append(
-                                dice_score)
-                            dices025_std.append(
-                                std_dice)
+
                             hausd025.append(
                                 hausdorff_dist)
                             hausd025_std.append(
                                 std_haus)
 
                         if pers_perc == 0.5:
-                            dices05.append(dice_score)
-                            dices05_std.append(
-                                std_dice)
+
                             hausd05.append(
                                 hausdorff_dist)
                             hausd05_std.append(
                                 std_haus)
                         if pers_perc == 0.75:
-                            dices075.append(
-                                dice_score)
-                            dices075_std.append(
-                                std_dice)
+
                             hausd075.append(
                                 hausdorff_dist)
                             hausd075_std.append(
                                 std_haus)
                         if pers_perc == 1:
-                            dices1.append(dice_score)
-                            dices1_std.append(
-                                std_dice)
+
                             hausd1.append(
                                 hausdorff_dist)
                             hausd1_std.append(
                                 std_haus)
 
             rounding_num = 3
-            med_dice025 = round(np.median(dices025), rounding_num)
-            std_dice025 = round(np.median(dices025_std), rounding_num)
-            med_dice05 = round(np.median(dices05), rounding_num)
-            std_dice05 = round(np.median(dices05_std), rounding_num)
-            med_dice075 = round(np.mean(dices075), rounding_num)
-            std_dice075 = round(np.median(dices075_std), rounding_num)
-            med_dice1 = round(np.mean(dices1), rounding_num)
-            std_dice1 = round(np.median(dices1_std), rounding_num)
-
             med_hausd025 = round(np.median(hausd025), rounding_num)
             std_hausd025 = round(np.median(hausd025_std), rounding_num)
             med_hausd05 = round(np.median(hausd05), rounding_num)
@@ -884,84 +855,77 @@ def plot_thrdice_andHausd_vs_datapercs_for_model(whichdataset, whichmodel, layer
             med_hausd1 = round(np.mean(hausd1), rounding_num)
             std_hausd1 = round(np.median(hausd1_std), rounding_num)
 
-            if score == scores[0]:
-                bincross_med_dices = [med_dice025, med_dice05, med_dice075, med_dice1]
-                bincross_std_dices = [std_dice025, std_dice05, std_dice075, std_dice1]
+
             if score == scores[1]:
                 hausd_med_dices = [med_hausd025, med_hausd05, med_hausd075, med_hausd1]
                 hausd_std_dices = [std_hausd025, std_hausd05, std_hausd075, std_hausd1]
 
 
-    ind = np.arange(len(bincross_med_dices))  # the x locations for the groups
+    ind = np.arange(len(hausd_med_dices))  # the x locations for the groups
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
-    rects1 = ax.bar(ind - width / 2, bincross_med_dices, width, yerr=bincross_std_dices,
-                    label='Dice')
-    rects2 = ax.bar(ind + width / 2, hausd_med_dices, width, yerr=hausd_std_dices,
-                    label='Hausdorff')
+    ax.set_axisbelow(True)
+
+    rects2 = ax.bar(ind + width, hausd_med_dices, width, yerr=hausd_std_dices)
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
     ax.set_ylabel('median Dice scores')
-    ax.set_title('Dice scores for ' + whichdataset + ' dataset against percentage of patients using ' + whichmodel + str(layer))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
-    ax.legend(loc = 2)
+    # ax.legend(loc = 2)
 
-    def autolabel(rects, xpos='center'):
-        """
-        Attach a text label above each bar in *rects*, displaying its height.
-
-        *xpos* indicates which side to place the text w.r.t. the center of
-        the bar. It can be one of the following {'center', 'right', 'left'}.
-        """
-
-        ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-        offset = {'center': 0, 'right': 1, 'left': -1}
-
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-                        textcoords="offset points",  # in both directions
-                        ha=ha[xpos], va='bottom')
-
-    autolabel(rects1, "left")
-    autolabel(rects2, "right")
+    # def autolabel(rects, xpos='center'):
+    #     """
+    #     Attach a text label above each bar in *rects*, displaying its height.
+    #
+    #     *xpos* indicates which side to place the text w.r.t. the center of
+    #     the bar. It can be one of the following {'center', 'right', 'left'}.
+    #     """
+    #
+    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    #     offset = {'center': 0, 'right': 1, 'left': -1}
+    #
+    #     for rect in rects:
+    #         height = rect.get_height()
+    #         ax.annotate('{}'.format(height),
+    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
+    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
+    #                     textcoords="offset points",  # in both directions
+    #                     ha=ha[xpos], va='bottom')
+    #
+    # autolabel(rects2, "right")
 
     fig.tight_layout()
-    title = ax.set_title("\n".join(wrap('Dice scores for ' + whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
+    title = ax.set_title("\n".join(wrap('Hausdorff distances for ' + whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
 
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
+    plt.savefig(basepath + whichmodel + str(layer) + 'hausd')
+
     plt.show()
 
 
 def save_plts():
-    datasets = ['York']
-    networks = ['param_unet']
+    datasets = ['York','ACDC']
+    networks = ['param_unet','segnetwork']
     for dataset in datasets:
         for network in networks:
             if network == 'param_unet':
                 layers = [2,3,4,5]
             else: layers = [1]
             for layer in layers:
-                # plot_thrdice_vs_datapercs_for_model(dataset, network, layer)
-                plot_thrdice_andHausd_vs_datapercs_for_model(dataset, network, layer)
+                plot_thrdice_vs_datapercs_for_model(dataset, network, layer)
+                plot_Hausd_vs_datapercs_for_model(dataset, network, layer)
+        plot_thrdice_vs_datapercs('binary_crossentropy', dataset)
+        plot_hausdorff_vs_datapercs('binary_crossentropy', dataset)
 
 
 if __name__ == '__main__':
-    # save_plts()
-    # plot_thrdice_andHausd_vs_datapercs_for_model('York', 'param_unet', 4)
-    # plot_dice_vs_pers_slice('York', 'param_unet', 4)
-    # scatter_pers_vs_slice('York', 'param_unet', 4)
-    # plot_thrdice_vs_datapercs('binary_crossentropy', 'ACDC')
-    plot_thrdice_vs_datapercs('binary_crossentropy', 'York')
-    # plot_hausdorff_vs_datapercs('binary_crossentropy', 'ACDC')
-    plot_hausdorff_vs_datapercs('binary_crossentropy', 'York')
-
+    save_plts()
+    plot_thrdice_vs_datapercs('binary_crossentropy', 'ACDC')
+    plot_hausdorff_vs_datapercs('binary_crossentropy', 'ACDC')
 
 something = 0
