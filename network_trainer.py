@@ -321,9 +321,9 @@ for folder , data_gen_args in enumerate(data_gen_argss):
 
 
                                     if data_augm == True:
-                                        if not os.path.exists(os.path.join(path, folders[folder])):
-                                            os.makedirs(os.path.join(path, folders[folder]))
-                                        save_dir = os.path.join(path, folders[folder])
+                                        if not os.path.exists(os.path.join(path, folders[folder], str(split)+'split')):
+                                            os.makedirs(os.path.join(path, folders[folder], str(split)+'split'))
+                                        save_dir = os.path.join(path, folders[folder], str(split)+'split')
                                     else:
                                         if not os.path.exists(path):
                                             os.makedirs(path)
