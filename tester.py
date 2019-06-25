@@ -776,38 +776,108 @@ def plot_dice_vs_pers_slice(whichdataset, whichmodel, layer):
     ax.set_xticklabels(names)
     ax.set_title('Dice score vs percentages of patients and slices for ' + whichmodel + str(layer))
     ax.legend()
-
-    # def autolabel(rects, xpos='center'):
-    #     """
-    #     Attach a text label above each bar in *rects*, displaying its height.
-    #
-    #     *xpos* indicates which side to place the text w.r.t. the center of
-    #     the bar. It can be one of the following {'center', 'right', 'left'}.
-    #     """
-    #
-    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-    #     offset = {'center': 0, 'right': 1, 'left': -1}
-    #
-    #     for rect in rects:
-    #         height = rect.get_height()
-    #         ax.annotate('{}'.format(round(height,3)),
-    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
-    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-    #                     textcoords="offset points",  # in both directions
-    #                     ha=ha[xpos], va='bottom', rotation = 15)
-    #
-    # autolabel(rects1, "left")
-    # autolabel(rects2, "left")
-    # autolabel(rects3, "left")
-    # autolabel(rects4, "right")
-
-
-
     fig.tight_layout()
-    plt.savefig(basepath + whichmodel + str(layer) + 'pers_slice_var')
+    plt.savefig(basepath + whichmodel + str(layer) + 'pers_slice_var_dice')
 
     plt.show()
 
+def plot_hausd_vs_pers_slice(whichdataset, whichmodel, layer):
+    """
+    Plots the dice scores of one model for different person percentages and different slice percentages but each only for 100% of the other
+    :param whichdataset:
+    :param whichmodel:
+    :return:
+    """
+
+    basepath = whichdataset +'_results/'
+    loss = 'binary_crossentropy'
+    pers_percs = [0.25, 0.5, 0.75, 1]
+    slice_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1,2,3,4]
+
+
+    pers025 = []
+    pers05 = []
+    pers075 = []
+    pers1 = []
+    std025 = []
+    std05 = []
+    std075 = []
+    std1 = []
+    hausdd025 = []
+    hausdd05 = []
+    hausdd075 = []
+    hausdd1 = []
+    hausdd025_std = []
+    hausdd05_std = []
+    hausdd075_std = []
+    hausdd1_std = []
+
+    for pers_perc in pers_percs:
+
+        for slice_perc in slice_percs:
+            for split in splits:
+
+                if pers_perc == 1:
+                    haud_d, std_hausdd, faulty_hausdd = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc,
+                                                                           layer, split, whichdataset)
+
+                    if faulty_hausdd == False:
+                        if slice_perc == 0.25:
+                            hausdd025.append(haud_d)
+                            hausdd025_std.append(std_hausdd)
+                        if slice_perc == 0.5:
+                            hausdd05.append(haud_d)
+                            hausdd05_std.append(std_hausdd)
+                        if slice_perc == 0.75:
+                            hausdd075.append(haud_d)
+                            hausdd075_std.append(std_hausdd)
+                        if slice_perc == 1:
+                            hausdd1.append(haud_d)
+                            hausdd1_std.append(std_hausdd)
+                if slice_perc == 1:
+                    haud_d, std_hausdd, faulty_hausdd = compute_hausd_dist(whichmodel, loss, pers_perc, slice_perc,
+                                                                           layer, split, whichdataset)
+
+                    if faulty_hausdd == False:
+                        if pers_perc == 0.25:
+                            pers025.append(haud_d)
+                            std025.append(std_hausdd)
+                        if pers_perc == 0.5:
+                            pers05.append(haud_d)
+                            std05.append(std_hausdd)
+                        if pers_perc == 0.75:
+                            pers075.append(haud_d)
+                            std075.append(std_hausdd)
+                        if pers_perc == 1:
+                            pers1.append(haud_d)
+                            std1.append(std_hausdd)
+
+
+    pers_variations = [np.median(pers025),np.median(pers05),np.median(pers075),np.median(pers1)]
+    pers_variations_std = [np.median(std025),np.median(std05),np.median(std075),np.median(std1)]
+    slice_variations = [np.median(hausdd025), np.median(hausdd05), np.median(hausdd075), np.median(hausdd1)]
+    slice_variations_std = [np.median(hausdd025_std), np.median(hausdd05_std), np.median(hausdd075_std), np.median(hausdd1_std)]
+    fig, (ax) = plt.subplots(1)
+    ind = np.arange(len(pers_variations))
+    width = 0.35
+
+    rects1 = ax.bar(ind - width/2, pers_variations, width, label='%Patients')
+    rects2 = ax.bar(ind + width/2, slice_variations, width, label='%Slices')
+
+
+    names = ['25%', '50%', '75%', '100%']
+    ax.set_axisbelow(True)
+    ax.yaxis.grid(True)
+
+    ax.set_xticks(ind)
+    ax.set_xticklabels(names)
+    ax.set_title('Hausdorff distance vs percentages of patients and slices for ' + whichmodel + str(layer))
+    ax.legend()
+    fig.tight_layout()
+    plt.savefig(basepath + whichmodel + str(layer) + 'pers_slice_var_hausd')
+
+    plt.show()
 
 def plot_thrdice_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer):
     slice_percs = [1]
@@ -886,29 +956,6 @@ def plot_thrdice_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, lay
     ax.set_title('Dice scores for ' + whichdataset + ' dataset against percentage of patients using ' + whichmodel + str(layer))
     ax.set_xticks(ind)
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
-    # ax.legend(loc = 2)
-
-    # def autolabel(rects, xpos='center'):
-    #     """
-    #     Attach a text label above each bar in *rects*, displaying its height.
-    #
-    #     *xpos* indicates which side to place the text w.r.t. the center of
-    #     the bar. It can be one of the following {'center', 'right', 'left'}.
-    #     """
-    #
-    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-    #     offset = {'center': 0, 'right': 1, 'left': -1}
-    #
-    #     for rect in rects:
-    #         height = rect.get_height()
-    #         ax.annotate('{}'.format(height),
-    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
-    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-    #                     textcoords="offset points",  # in both directions
-    #                     ha=ha[xpos], va='bottom')
-
-    # autolabel(rects1, "left")
-    # autolabel(rects2, "right")
 
     fig.tight_layout()
     title = ax.set_title("\n".join(wrap('Dice scores for '+ whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
@@ -921,7 +968,7 @@ def plot_thrdice_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, lay
 
 
 
-def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer): #deprecated
+def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer):
     slice_percs = [1]
     basepath = whichdataset +'_results/'
     loss= whichloss
@@ -996,7 +1043,7 @@ def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xlabel('Percentage of patients used')
-    ax.set_ylabel('median Dice scores')
+    ax.set_ylabel('median Hausdorff distances')
     ax.set_xticks(ind)
     ax.yaxis.grid(True)
 
@@ -1057,6 +1104,10 @@ if __name__ == '__main__':
     # plot_dice_vs_all_pers_slice('York', 'param_unet', 4)
 
 
-    plot_dice_vs_pers_slice('ACDC', 'param_unet', 5)
+    # plot_dice_vs_pers_slice('York', 'param_unet', 5)
+    plot_hausd_vs_pers_slice('York', 'param_unet', 5)
+    plot_hausd_vs_pers_slice('ACDC', 'param_unet', 5)
+    plot_Hausd_vs_datapercs_for_model('binary_crossentropy', 'York', 'segnetwork', 1)
+    plot_Hausd_vs_datapercs_for_model('binary_crossentropy', 'ACDC', 'segnetwork', 1)
 
 something = 0

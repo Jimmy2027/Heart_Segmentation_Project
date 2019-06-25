@@ -60,7 +60,7 @@ amount_of_non_gray_predictions = 4
 min_val_loss = 1e-3
 
 #**************************** Main Parameters *****************************
-testing = False
+testing = True
 
 if testing:
     maxepochs = 1
@@ -69,9 +69,9 @@ if testing:
     slice_percs = [0.1]
 else:
     maxepochs = 500
-    patient_percs = [1, 0.75, 0.5, 0.25]
+    patient_percs = [1]
     levels_arr = [4]
-    slice_percs = [1, 0.75, 0.5, 0.25]
+    slice_percs = [1]
 datasets = ['ACDC']
 data_augm = True
 whichloss = 'binary_crossentropy'
@@ -79,11 +79,11 @@ whichloss = 'binary_crossentropy'
 #************************** Data Augmentation Parameters *************************************
 single_param = True # tests all data augm param one by one ... only works if data_augm also True
 rotation_range = 30
-width_shift_range = 0.2
+width_shift_range = 0
 height_shift_range = 0.2
 zoom_range = 0.2
 horizontal_flip = 1
-vertical_flip = 1
+vertical_flip = 0
 data_gen_args_list = get_args_list(data_augm, single_param, rotation_range, width_shift_range, height_shift_range, zoom_range, horizontal_flip, vertical_flip)
 
 

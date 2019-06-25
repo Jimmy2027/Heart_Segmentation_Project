@@ -356,19 +356,15 @@ def get_train_generator(data_gen_args, train_images, train_masks, val_images, va
         os.makedirs(y_augm_save_dir)
     image_generator = image_datagen.flow(
         train_images,
-        seed=seed,
-        save_to_dir=x_augm_save_dir, save_prefix=save_prefix,
-        batch_size=batch_size)
+        seed=seed,batch_size=batch_size)
 
     mask_generator = mask_datagen.flow(
         train_masks,
-        seed=seed,
-        save_to_dir=y_augm_save_dir, save_prefix=save_prefix,
-        batch_size=batch_size)
+        seed=seed, batch_size=batch_size)
 
     train_generator = zip(image_generator, mask_generator)
 
-    augm_count_before = add_count(x_augm_save_dir)
+    augm_count_before = 0
 
     return train_generator, x_augm_save_dir, prefix, augm_count_before
 

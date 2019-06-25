@@ -22,7 +22,7 @@ notification_system = NotificationSystem()
 title = 'testing_data_augmentation'
 
 testing = True
-data_augm = True
+data_augm = False
 
 if testing == True:
     whichlosses = ['dice']
@@ -192,11 +192,11 @@ for folder , data_gen_args in enumerate(data_gen_argss):
                 input = np.load('unet_input.npy', allow_pickle=True)
                 labels = np.load('unet_labels.npy', allow_pickle=True)
 
-                # plt.figure()
-                # for i in range(len(labels)):                      #verfy that input labels are 0 and 1
-                #     plt.hist(np.unique(labels[i][:]))
-                #
-                # plt.show()
+                plt.figure()
+                for i in range(len(labels)):                      #verfy that input labels are 0 and 1
+                    plt.hist(np.unique(labels[i][:]))
+
+                plt.show()
                 old_input = input
                 old_labels = labels
 
