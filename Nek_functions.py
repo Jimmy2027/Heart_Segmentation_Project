@@ -350,6 +350,10 @@ def get_train_generator(data_gen_args, train_images, train_masks, val_images, va
     if vertical_flip:
         prefix += 'vf-'
 
+    if not os.path.exists(x_augm_save_dir):
+        os.makedirs(x_augm_save_dir)
+    if not os.path.exists(y_augm_save_dir):
+        os.makedirs(y_augm_save_dir)
     image_generator = image_datagen.flow(
         train_images,
         seed=seed,
