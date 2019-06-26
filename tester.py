@@ -159,53 +159,6 @@ def print_best_scores(whitchdataset):
 
 
 
-def scatterplot_thrdice_vs_datapercs_vs_model(whichloss):
-    results = []
-    results = find_results(basepath, results)
-    datapercs = [0.25, 0.5, 0.75, 1]
-    dices_param_unet_2 = []
-    dices_param_unet_3 = []
-    dices_param_unet_4 = []
-    dices_param_unet_5 = []
-    dices_segnet = []
-    dices = []
-    datapercs = []
-    datapercs_param_unet_2 = []
-    datapercs_param_unet_3 = []
-    datapercs_param_unet_4 = []
-    datapercs_param_unet_5 = []
-    datapercs_segnet = []
-
-    for dict in results:
-        if dict['model'] == 'param_unet' and dict['unet_layers'] == 2 and dict['loss'] == whichloss:
-            dices_param_unet_2.append(dict["median_thresholded_dice"])
-            datapercs_param_unet_2.append(dict["number_of_patients"])
-        if dict['model'] == 'param_unet' and dict['unet_layers'] == 3 and dict['loss'] == whichloss:
-            dices_param_unet_3.append(dict["median_thresholded_dice"])
-            datapercs_param_unet_3.append(dict["number_of_patients"])
-        if dict['model'] == 'param_unet' and dict['unet_layers'] == 4 and dict['loss'] == whichloss:
-            dices_param_unet_4.append(dict["median_thresholded_dice"])
-            datapercs_param_unet_4.append(dict["number_of_patients"])
-        if dict['model'] == 'param_unet' and dict['unet_layers'] == 5 and dict['loss'] == whichloss:
-            dices_param_unet_5.append(dict["median_thresholded_dice"])
-            datapercs_param_unet_5.append(dict["number_of_patients"])
-        if dict['model'] == 'segnet' and dict['loss'] == whichloss:
-            dices_segnet.append(dict["median_thresholded_dice"])
-            datapercs_segnet.append(dict["number_of_patients"])
-
-    dices = [np.median(dices_param_unet_2), np.median(dices_param_unet_3), np.median(dices_param_unet_4), np.median(dices_param_unet_5), np.median(dices_segnet)]
-    datapercs = [datapercs_param_unet_2, datapercs_param_unet_3, datapercs_param_unet_4, datapercs_param_unet_5, datapercs_segnet]
-    colors = cm.rainbow(np.linspace(0, 1, len(dices)))
-
-    plt.figure()  # colors for different networksd
-    labels = ['param_unet_2', 'param_unet_3', 'param_unet_4', 'param_unet_5', 'segnet']
-    for i in range(len(dices)):
-        plt.xlabel('Data percentages')
-        plt.ylabel('Dice scores')
-        plt.scatter(datapercs[i], dices[i], c=colors[i], s=50, label=labels[i])
-    plt.legend(loc=(0.67, 0.75))
-    plt.title('Dice scores of different networks against the data percentages for ' + whichloss)
-    plt.show()
 
 def plot_thrdice_vs_datapercs(whichloss, which_dataset):
     """
@@ -862,8 +815,8 @@ def plot_hausd_vs_pers_slice(whichdataset, whichmodel, layer):
     ind = np.arange(len(pers_variations))
     width = 0.35
 
-    rects1 = ax.bar(ind - width/2, pers_variations, width, label='%Patients')
-    rects2 = ax.bar(ind + width/2, slice_variations, width, label='%Slices')
+    rects1 = ax.bar(ind - width/2, pers_variations, width, label='%Patients', yerr=pers_variations_std)
+    rects2 = ax.bar(ind + width/2, slice_variations, width, label='%Slices', yerr = slice_variations_std)
 
 
     names = ['25%', '50%', '75%', '100%']
@@ -963,7 +916,7 @@ def plot_thrdice_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, lay
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(basepath + whichmodel + str(layer) + 'dice')
+    plt.savefig(basepath + whichmodel +whichloss+'loss'+ str(layer) + 'dice')
     plt.show()
 
 
@@ -1048,28 +1001,6 @@ def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer
     ax.yaxis.grid(True)
 
     ax.set_xticklabels(('25%', '50%', '75%', '100%'))
-    # ax.legend(loc = 2)
-
-    # def autolabel(rects, xpos='center'):
-    #     """
-    #     Attach a text label above each bar in *rects*, displaying its height.
-    #
-    #     *xpos* indicates which side to place the text w.r.t. the center of
-    #     the bar. It can be one of the following {'center', 'right', 'left'}.
-    #     """
-    #
-    #     ha = {'center': 'center', 'right': 'left', 'left': 'right'}
-    #     offset = {'center': 0, 'right': 1, 'left': -1}
-    #
-    #     for rect in rects:
-    #         height = rect.get_height()
-    #         ax.annotate('{}'.format(height),
-    #                     xy=(rect.get_x() + rect.get_width() / 2, height),
-    #                     xytext=(offset[xpos] * 3, 3),  # use 3 points offset
-    #                     textcoords="offset points",  # in both directions
-    #                     ha=ha[xpos], va='bottom')
-    #
-    # autolabel(rects2, "right")
 
     fig.tight_layout()
     title = ax.set_title("\n".join(wrap('Hausdorff distances for ' + whichdataset + ' dataset against percentage of patients using '+ whichmodel + str(layer), 60)))
@@ -1077,9 +1008,206 @@ def plot_Hausd_vs_datapercs_for_model(whichloss, whichdataset, whichmodel, layer
     fig.tight_layout()
     title.set_y(1.05)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(basepath + whichmodel + str(layer) + 'hausd')
+    plt.savefig(basepath + whichmodel +whichloss+'loss' + str(layer) + 'hausd')
 
     plt.show()
+
+
+def plot_dataset_switch(whichloss, train_dataset, test_dataset, whichmodel, layer):
+    """
+    Compares the dice scores of a model trained on one dataset and tested on another
+    :param whichloss:
+    :param train_dataset:
+    :param test_dataset:
+    :param whichmodel:
+    :param layer:
+    :return:
+    """
+
+    basepath = train_dataset+'_predicts_'+test_dataset+'_results'
+    slice_perc = [1]
+    train_basepath = train_dataset + '_results'
+    test_basepath = test_dataset + '_results'
+    loss = whichloss
+    pers_percs = [0.25, 0.5, 0.75, 1]
+    splits = [1,2,3,4]
+    slice_percs=[1]
+
+
+    AA_dices025 = []
+    AA_dices05 = []
+    AA_dices075 = []
+    AA_dices1 = []
+    AA_dices025_std = []
+    AA_dices05_std = []
+    AA_dices075_std = []
+    AA_dices1_std = []
+
+
+    AB_dices025 = []
+    AB_dices05 = []
+    AB_dices075 = []
+    AB_dices1 = []
+    AB_dices025_std = []
+    AB_dices05_std = []
+    AB_dices075_std = []
+    AB_dices1_std = []
+
+
+    BB_dices025 = []
+    BB_dices05 = []
+    BB_dices075 = []
+    BB_dices1 = []
+    BB_dices025_std = []
+    BB_dices05_std = []
+    BB_dices075_std = []
+    BB_dices1_std = []
+
+
+    for pers_perc in pers_percs:
+        for slice_perc in slice_percs:
+            for split in splits:
+                AA_dice_score, AA_std_dice, AA_faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split, train_dataset)
+                AB_dice_score, AB_std_dice, AB_faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split, train_dataset+'_predicts_'+test_dataset)
+                BB_dice_score, BB_std_dice, BB_faulty_dice = compute_dice_score(whichmodel, loss, pers_perc, slice_perc, layer, split, test_dataset)
+
+
+                if AA_faulty_dice == False:
+                    if pers_perc == 0.25:
+                        if AA_faulty_dice == False:
+                            AA_dices025.append(
+                                AA_dice_score)
+                            AA_dices025_std.append(
+                                AA_std_dice)
+                        if AB_faulty_dice == False:
+                            AB_dices025.append(
+                                AB_dice_score)
+                            AB_dices025_std.append(
+                                AB_std_dice)
+                        if BB_faulty_dice == False:
+                            BB_dices025.append(
+                                BB_dice_score)
+                            BB_dices025_std.append(
+                                BB_std_dice)
+
+
+                    if pers_perc == 0.5:
+                        if AA_faulty_dice == False:
+                            AA_dices05.append(AA_dice_score)
+                            AA_dices05_std.append(
+                                AA_std_dice)
+                        if AB_faulty_dice == False:
+
+                            AB_dices05.append(AB_dice_score)
+                            AB_dices05_std.append(
+                                AB_std_dice)
+
+                        if BB_faulty_dice == False:
+
+                            BB_dices05.append(BB_dice_score)
+                            BB_dices05_std.append(
+                                BB_std_dice)
+
+                    if pers_perc == 0.75:
+                        if AA_faulty_dice == False:
+                            AA_dices075.append(
+                               AA_dice_score)
+                            AA_dices075_std.append(
+                                AA_std_dice)
+                        if AB_faulty_dice == False:
+
+                            AB_dices075.append(
+                                AB_dice_score)
+                            AB_dices075_std.append(
+                                AB_std_dice)
+
+                        if BB_faulty_dice == False:
+
+                            BB_dices075.append(
+                                BB_dice_score)
+                            BB_dices075_std.append(
+                                BB_std_dice)
+
+                    if pers_perc == 1:
+                        if AA_faulty_dice == False:
+                            AA_dices1.append(AA_dice_score)
+                            AA_dices1_std.append(
+                               AA_std_dice)
+
+                        if AB_faulty_dice == False:
+
+                            AB_dices1.append(AB_dice_score)
+                            AB_dices1_std.append(
+                                AB_std_dice)
+                        if BB_faulty_dice == False:
+
+                            BB_dices1.append(BB_dice_score)
+                            BB_dices1_std.append(
+                                BB_std_dice)
+
+    AA_med_dice025 = np.median(AA_dices025)
+    AA_std_dice025 = np.median(AA_dices025_std)
+    AA_med_dice05 = np.median(AA_dices05)
+    AA_std_dice05 = np.median(AA_dices05_std)
+    AA_med_dice075 = np.mean(AA_dices075)
+    AA_std_dice075 = np.median(AA_dices075_std)
+    AA_med_dice1 = np.mean(AA_dices1)
+    AA_std_dice1 = np.median(AA_dices1_std)
+
+
+    AB_med_dice025 = np.median(AB_dices025)
+    AB_std_dice025 = np.median(AB_dices025_std)
+    AB_med_dice05 = np.median(AB_dices05)
+    AB_std_dice05 = np.median(AB_dices05_std)
+    AB_med_dice075 = np.mean(AB_dices075)
+    AB_std_dice075 = np.median(AB_dices075_std)
+    AB_med_dice1 = np.mean(AB_dices1)
+    AB_std_dice1 = np.median(AB_dices1_std)
+
+
+    BB_med_dice025 = np.median(BB_dices025)
+    BB_std_dice025 = np.median(BB_dices025_std)
+    BB_med_dice05 = np.median(BB_dices05)
+    BB_std_dice05 = np.median(BB_dices05_std)
+    BB_med_dice075 = np.mean(BB_dices075)
+    BB_std_dice075 = np.median(BB_dices075_std)
+    BB_med_dice1 = np.mean(BB_dices1)
+    BB_std_dice1 = np.median(BB_dices1_std)
+
+
+
+    AA_bincross_med_dices = [AA_med_dice025, AA_med_dice05, AA_med_dice075, AA_med_dice1]
+    AA_bincross_std_dices = [AA_std_dice025, AA_std_dice05, AA_std_dice075, AA_std_dice1]
+
+    AB_bincross_med_dices = [AB_med_dice025, AB_med_dice05, AB_med_dice075, AB_med_dice1]
+    AB_bincross_std_dices = [AB_std_dice025, AB_std_dice05, AB_std_dice075, AB_std_dice1]
+
+    BB_bincross_med_dices = [BB_med_dice025, BB_med_dice05, BB_med_dice075, BB_med_dice1]
+    BB_bincross_std_dices = [BB_std_dice025, BB_std_dice05, BB_std_dice075, BB_std_dice1]
+
+    fig, (ax) = plt.subplots(1)
+    ind = np.arange(len(AB_bincross_med_dices))
+    width = 0.2
+
+    ax.bar(ind - width/2, AA_bincross_med_dices, width, yerr=AA_bincross_std_dices,label=train_dataset+'vs'+train_dataset)
+    ax.bar(ind + width/2, AB_bincross_med_dices, width, label=train_dataset+'vs'+test_dataset, yerr = AB_bincross_std_dices)
+    ax.bar(ind + 3*width/2, BB_bincross_med_dices, width, label=test_dataset+'vs'+ test_dataset, yerr = BB_bincross_std_dices)
+
+
+    names = ['25%', '50%', '75%', '100%']
+    ax.set_axisbelow(True)
+    ax.yaxis.grid(True)
+
+    ax.set_xticks(ind)
+    ax.set_xticklabels(names)
+    ax.set_title('Dice score vs percentages of patients and slices for ' + whichmodel + str(layer))
+    ax.legend()
+    fig.tight_layout()
+    plt.savefig(basepath +'/'+ whichmodel + str(layer) + 'dice_score')
+
+    plt.show()
+
+
 
 
 def save_plts():
@@ -1104,10 +1232,15 @@ if __name__ == '__main__':
     # plot_dice_vs_all_pers_slice('York', 'param_unet', 4)
 
 
-    # plot_dice_vs_pers_slice('York', 'param_unet', 5)
+    # plot_dice_vs_pers_slice('York', 'param_unet', 4)
+    # plot_dice_vs_pers_slice('ACDC', 'param_unet', 4)
+
     plot_hausd_vs_pers_slice('York', 'param_unet', 5)
     plot_hausd_vs_pers_slice('ACDC', 'param_unet', 5)
-    plot_Hausd_vs_datapercs_for_model('binary_crossentropy', 'York', 'segnetwork', 1)
-    plot_Hausd_vs_datapercs_for_model('binary_crossentropy', 'ACDC', 'segnetwork', 1)
+    # plot_Hausd_vs_datapercs_for_model('dice', 'York', 'segnetwork', 1)
+    # plot_Hausd_vs_datapercs_for_model('dice', 'ACDC', 'segnetwork', 1)
+    # plot_thrdice_vs_datapercs_for_model('dice', 'ACDC', 'segnetwork', 1)
+
+    # plot_dataset_switch('binary_crossentropy', 'ACDC', 'York','param_unet' , 4)
 
 something = 0

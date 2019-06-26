@@ -287,12 +287,7 @@ def get_args_list(data_augm, single_param, rotation_range, width_shift_range, he
 
 def get_train_generator(data_gen_args, train_images, train_masks, val_images, val_masks, seed, single_param, batch_size,
                         dataset):
-    for root, dirs, files in os.walk("ACDC_results_data_augm/augmented_data"):
-        for f in files:
-            os.unlink(os.path.join(root, f))
-    for root, dirs, files in os.walk("York_results_data_augm/augmented_data"):
-        for f in files:
-            os.unlink(os.path.join(root, f))
+
 
     rotation_range = data_gen_args.get("rotation_range")
     width_shift_range = data_gen_args.get("width_shift_range")
@@ -308,52 +303,10 @@ def get_train_generator(data_gen_args, train_images, train_masks, val_images, va
     image_datagen.fit(train_images, augment=True, seed=seed)
     mask_datagen.fit(train_masks, augment=True, seed=seed)
 
-    augm_count = 0
+    x_augm_save_dir = 'something'
+    prefix = 'else'
 
-    prefix = ''
-    if single_param:
-        if rotation_range != 0:
-            dir = dataset + "_results_data_augm/augmented_data/rotation/"
-            save_prefix = str(rotation_range)
-        if width_shift_range != 0:
-            dir = dataset + "_results_data_augm/augmented_data/width_shift/"
-            save_prefix = str(width_shift_range)
-        if height_shift_range != 0:
-            dir = dataset + "_results_data_augm/augmented_data/height_shift/"
-            save_prefix = str(height_shift_range)
-        if zoom_range != 0:
-            dir = dataset + "_results_data_augm/augmented_data/zoom/"
-            save_prefix = str(zoom_range)
-        if horizontal_flip:
-            dir = dataset + "_results_data_augm/augmented_data/horizontal_flip/"
-            save_prefix = ''
-        if vertical_flip:
-            dir = dataset + "_results_data_augm/augmented_data/vertical_flip/"
-            save_prefix = ''
-        x_augm_save_dir = dir + "images/"
-        y_augm_save_dir = dir + "masks/"
-    else:
-        x_augm_save_dir = dataset + "_results_data_augm/augmented_data/all/images/"
-        y_augm_save_dir = dataset + "_results_data_augm/augmented_data/all/masks/"
-        save_prefix = ''
 
-    if rotation_range != 0:
-        prefix += 'r-'
-    if width_shift_range != 0:
-        prefix += 'ws-'
-    if height_shift_range != 0:
-        prefix += 'hs-'
-    if zoom_range != 0:
-        prefix += 'z-'
-    if horizontal_flip:
-        prefix += 'hf-'
-    if vertical_flip:
-        prefix += 'vf-'
-
-    if not os.path.exists(x_augm_save_dir):
-        os.makedirs(x_augm_save_dir)
-    if not os.path.exists(y_augm_save_dir):
-        os.makedirs(y_augm_save_dir)
     image_generator = image_datagen.flow(
         train_images,
         seed=seed,batch_size=batch_size)
