@@ -54,7 +54,7 @@ dropout_rate = 0.5
 whichmodels = ['param_unet']
 split = (0.3,0.1)
 basic_batch_size = 24
-val_loss_patience = 15
+val_loss_patience = 30
 gray_images_patience = 1
 amount_of_non_gray_predictions = 4
 min_val_loss = 1e-3
@@ -136,9 +136,7 @@ for whichmodel in whichmodels:
                 if patient_perc != 1:
                     slice_percs = [1]
                 else:
-                    if not testing:
-                        slice_percs = [1]
-                    else:
+                    if testing:
                         slice_percs = [0.25]
                 for slice_perc in slice_percs:
                     for args in data_gen_args_list:
