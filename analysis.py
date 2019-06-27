@@ -280,15 +280,16 @@ def get_slices_plot(score, save, show, dataset, level):
 def get_data_augm_plots(score, save, show, dataset):
     if dataset == "ACDC":
         path = 'ACDC_results_data_augm/new'
+
     if dataset == "York":
         path = 'York_results_data_augm/new'
 
     special = "100%_total_data-100%_per_pat"
-    params = ['unaugm', '-r-', '-ws-', '-hs-', '-z-', '-hf-', '-vf-']
-    param_names = ['unaugmented', 'rotation', 'width-shift', 'height-shift', 'zoom', 'hor-flip', 'vertical-flip']
+    params = ['unaugm', '-r-', '-ws-', '-hs-', '-z-', '-hf-', '-vf-', '-r-ws-hs-z-hf-vf-']
+    param_names = ['unaugm', 'rot', 'ws', 'hs', 'zoom', 'hor-flip', 'vert-flip', 'all']
 
-    dice_data = [[] for x in range(7)]
-    hd_data = [[] for x in range(7)]
+    dice_data = [[] for x in range(len(params))]
+    hd_data = [[] for x in range(len(params))]
 
     for i in range(len(params)):
         for root, subdirList, fileList in os.walk(path):
@@ -300,8 +301,8 @@ def get_data_augm_plots(score, save, show, dataset):
                                 hd_data[i].append(os.path.join(root, filename))
 
     def get_medians_stds_evals(data, score):
-        medians = np.empty([7])
-        stds = np.empty([7])
+        medians = np.empty([len(params)])
+        stds = np.empty([len(params)])
         evals = []
         for i in range(len(data)):
             print("*********************************************************************************************")
@@ -332,10 +333,13 @@ def get_data_augm_plots(score, save, show, dataset):
 
     ax1.set_xticks(ind)
     ax2.set_xticks(ind)
+    param_names1 = ['unaugm', 'rot', 'ws', 'hs', 'zoom', 'hor-flip', 'vert-flip', 'all']
+    param_names2 = ['unaugm', 'rot', 'ws', 'hs', 'zoom', 'hor-flip', 'vert-flip', 'all']
+
     ax1.set_xticklabels(param_names)
     ax2.set_xticklabels(param_names)
-    ax1.set_xlabel('Data Augmentation Strategy')
-    ax2.set_xlabel('Data Augmentation Strategy')
+    ax1.set_xlabel('unaugm: '+ str(round(dice_medians[0],2)) +' '+ 'rot: '+str(round(dice_medians[1],2))+' '+'ws: ' + str(round(dice_medians[2],2))+' '+'hs: '+str(round(dice_medians[3],2))+' '+'zoom: '+str(round(dice_medians[4],2))+' '+ 'hor-flip: '+ str(round(dice_medians[5],2))+' '+ 'vert-flip: '+str(round(dice_medians[6],2))+' '+'all: ' + str(round(dice_medians[7],2)))
+    ax2.set_xlabel('unaugm: '+str(round(hd_medians[0],2)) +' '+ 'rot: '+ str(round(hd_medians[1],2))+' '+'ws: '+str(round(hd_medians[2],2))+' '+'hs: ' + str(round(hd_medians[3],2))+' '+'zoom ' +str(round(hd_medians[4],2))+' '+ 'hor-flip: '+ str(round(hd_medians[5],2))+' '+ 'vert-flip: ' + str(round(hd_medians[6],2))+' '+ 'all: '+str(round(hd_medians[7],2)))
 
     ax1.set_ylabel('Dice Score')
     ax1.set_title(
@@ -351,12 +355,12 @@ def get_data_augm_plots(score, save, show, dataset):
     ax1.grid(axis='y')
     ax2.grid(axis='y')
     fig.tight_layout()
+    if save:
+        plt.savefig(path+'/augm_strats'+ dataset)
+        print("Saved Plot")
     if show:
         plt.show()
-    if save:
-        path = "plots/" + dataset + "-data_augm_strat.png"
-        plt.savefig(path)
-        print("Saved Plot")
+
     plt.close()
     return None
 
@@ -375,7 +379,7 @@ def get_plot():
     plot = "data_augm"
 
     show = True
-    save = False
+    save = True
 
     if plot == "level":
         get_levels_plot(score, save, show, dataset)

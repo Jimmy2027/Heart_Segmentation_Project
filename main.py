@@ -213,7 +213,7 @@ for split in splits:
 amount_training_data_York = [amount_training_data_split1, amount_training_data_split2, amount_training_data_split3, amount_training_data_split4]
 """
 amount_training_data: array where x: splits, y: person_percentage, z: slice_percentage
-for example : amount_training_data_ACDC[0][0][0] is for split 1, 0,25% for person and slice percentage
+for example : amount_training_data_ACDC[0][0][0] is for split 1, 0,25 for person and slice percentage
 """
 something = 0
 

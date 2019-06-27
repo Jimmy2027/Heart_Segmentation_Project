@@ -17,6 +17,12 @@ import keras.preprocessing as kp
 import tensorflow as tf
 from email_notification import NotificationSystem
 
+
+augmented = True
+special = "100%_total_data-100%_per_pat"
+params = ['-r-']
+model_paths = []
+
 which_train_dataset = 'ACDC'
 which_test_dataset = 'York'
 whichmodel = 'param_unet'
@@ -62,7 +68,7 @@ path = which_train_dataset + '_predicts_' + which_test_dataset+ '_results'
 
 for perc_index, perc in enumerate(pers_percs):
     for split in splits:
-        for split_number in seeds:
+        for seed_index, split_number in enumerate(seeds):
             random.seed(split_number)
             np.random.seed(split_number)
             tf.set_random_seed(split_number)
@@ -84,12 +90,26 @@ for perc_index, perc in enumerate(pers_percs):
                 slice_perc) + 'slices' + '/' + str(layers) + 'layers/' + str(split_number) + 'split'
 
 
-            for file in os.listdir(os.path.join(which_train_dataset+ '_results', 'param_unet', 'binary_crossentropy','1patients', '1slices', '4layers', str(seeds[0]) + 'split')):
-                if file.endswith('hdf5'):
-                    model_path = os.path.join(which_train_dataset+ '_results', 'param_unet','binary_crossentropy', '1patients', '1slices', '4layers', str(seeds[0]) + 'split', file)
+            if augmented== False:
+                for file in os.listdir(os.path.join(which_train_dataset+ '_results', 'param_unet', 'binary_crossentropy','1patients', '1slices', '4layers', str(seeds[0]) + 'split')):
+                    if file.endswith('hdf5'):
+                        model_path = os.path.join(which_train_dataset+ '_results', 'param_unet','binary_crossentropy', '1patients', '1slices', '4layers', str(seeds[0]) + 'split', file)
 
+                model = keras.models.load_model(model_path)
 
-            model = keras.models.load_model(model_path)
+            if augmented == True:
+                if which_train_dataset == "ACDC":
+                    path = 'ACDC_results_data_augm/new'
+                if which_train_dataset== "York":
+                    path = 'York_results_data_augm/new'
+                for i in range(len(params)):
+                    for root, subdirList, fileList in os.walk(path):
+                        for filename in fileList:
+                            if params[i] in root:  # check whether the file's DICOM
+                                if ("h5" in filename) and special in root and "training_data" not in filename:
+                                    model_paths.append(os.path.join(root,file))
+                model = keras.models.load_model(model_paths[seed_index])
+
 
             y_pred = []
             for i in x_test:

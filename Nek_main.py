@@ -69,15 +69,15 @@ if testing:
     slice_percs = [0.1]
 else:
     maxepochs = 500
-    patient_percs = [1]
+    patient_percs = [0.25, 0.5, 0.75, 1]
     levels_arr = [4]
-    slice_percs = [1]
+    slice_percs = [0.25, 0.5, 0.75, 1]
 datasets = ['ACDC']
 data_augm = False
 whichloss = 'binary_crossentropy'
 
 #************************** Data Augmentation Parameters *************************************
-single_param = True # tests all data augm param one by one ... only works if data_augm also True
+single_param = False # tests all data augm param one by one ... only works if data_augm also True
 rotation_range = 30
 width_shift_range = 0.2
 height_shift_range = 0.2
@@ -302,18 +302,30 @@ for whichmodel in whichmodels:
                                     augm_count_after = add_count(x_augm_save_dir)
                                     augm_count = augm_count_after - augm_count_before
 
+                                if testing == True:
+                                    path = "temp/new/" + \
+                                           whichmodel + '-' + \
+                                           str(epochs) + "_epochs" + '-' + \
+                                           str(int(patient_perc * 100)) + '%_total_data-' + \
+                                           str(int(slice_perc * 100)) + '%_per_pat-(' + \
+                                           str(train_images.shape[0]) + '_images)-' + \
+                                           str(levels) + '_levels' + '-' + 'seed_' + \
+                                           str(seed) + '-'
+                                else:
+                                    path = dataset + "_results_data_augm/new/" + \
+                                           whichmodel + '-' + \
+                                           str(epochs) + "_epochs" + '-' + \
+                                           str(int(patient_perc * 100)) + '%_total_data-' + \
+                                           str(int(slice_perc * 100)) + '%_per_pat-('+\
+                                           str(train_images.shape[0])+'_images)-' + \
+                                           str(levels) + '_levels' + '-' + 'seed_' + \
+                                           str(seed) + '-'
 
-                                path = dataset + "_results_data_augm/new/" + \
-                                       whichmodel + '-' + \
-                                       str(epochs) + "_epochs" + '-' + \
-                                       str(int(patient_perc * 100)) + '%_total_data-' + \
-                                       str(int(slice_perc * 100)) + '%_per_pat-('+\
-                                       str(train_images.shape[0])+'_images)-' + \
-                                       str(levels) + '_levels' + '-' + 'seed_' + \
-                                       str(seed) + '-'
                                 if data_augm:
                                     path += prefix + '(' + \
                                             str(augm_count) + '_augm)-'
+                                else: path += 'unaugm-'
+
 
                                 index = 1
                                 if not os.path.exists(path + str(index) + '/'):

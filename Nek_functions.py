@@ -319,6 +319,7 @@ def get_train_generator(data_gen_args, train_images, train_masks, val_images, va
     if vertical_flip:
         prefix += 'vf-'
 
+
     image_generator = image_datagen.flow(
         train_images,
         seed=seed,batch_size=batch_size)
