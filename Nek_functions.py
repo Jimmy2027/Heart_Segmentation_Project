@@ -304,8 +304,20 @@ def get_train_generator(data_gen_args, train_images, train_masks, val_images, va
     mask_datagen.fit(train_masks, augment=True, seed=seed)
 
     x_augm_save_dir = 'something'
-    prefix = 'else'
+    prefix = ''
 
+    if rotation_range != 0:
+        prefix += 'r-'
+    if width_shift_range != 0:
+        prefix += 'ws-'
+    if height_shift_range != 0:
+        prefix += 'hs-'
+    if zoom_range != 0:
+        prefix += 'z-'
+    if horizontal_flip:
+        prefix += 'hf-'
+    if vertical_flip:
+        prefix += 'vf-'
 
     image_generator = image_datagen.flow(
         train_images,

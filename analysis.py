@@ -285,7 +285,7 @@ def get_data_augm_plots(score, save, show, dataset):
 
     special = "100%_total_data-100%_per_pat"
     params = ['unaugm', '-r-', '-ws-', '-hs-', '-z-', '-hf-', '-vf-']
-    param_names = ['unaugmented', 'rotation', 'width-shift', 'height-shift', 'zoom', 'horizontal-flip', 'vertical-flip']
+    param_names = ['unaugmented', 'rotation', 'width-shift', 'height-shift', 'zoom', 'hor-flip', 'vertical-flip']
 
     dice_data = [[] for x in range(7)]
     hd_data = [[] for x in range(7)]
